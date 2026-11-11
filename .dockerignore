@@ -1,0 +1,10 @@
+# Allowlist: only what the image needs. Keeps .env, raw data and the starters out by construction.
+*
+!pyproject.toml
+!uv.lock
+!app.py
+!scout/
+!tools/
+!static/
+!data/nomad.duckdb
+**/__pycache__

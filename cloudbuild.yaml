@@ -1,0 +1,49 @@
+# Build and deploy NomadReady to Cloud Run. Runs on every push to main (Cloud Build trigger).
+# Free-tier settings: scales to zero (min 0), one instance at most.
+substitutions:
+  _REGION: us-central1
+  _SERVICE: nomadready
+  _BUCKET: agentic-ch3991-509700-nomadready-data
+  _REPO: nomadready
+  _IMAGE: ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/app
+
+steps:
+  # The database isn't in the repo (Inside Airbnb's terms): copy it from the private bucket
+  - id: fetch-db
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: bash
+    args: ["-c", "mkdir -p data && gcloud storage cp gs://${_BUCKET}/nomad.duckdb data/nomad.duckdb"]
+
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args: ["build", "-t", "${_IMAGE}:${BUILD_ID}", "."]
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args: ["push", "${_IMAGE}:${BUILD_ID}"]
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_IMAGE}:${BUILD_ID}
+      - --region=${_REGION}
+      - --service-account=nomadready-run@${PROJECT_ID}.iam.gserviceaccount.com
+      - --allow-unauthenticated
+      - --timeout=600            # answers take 1-3 minutes; the graders' wait is 5
+      - --min-instances=0        # scale to zero: free when idle
+      - --max-instances=1        # sessions are in memory, so one instance keeps follow-ups together
+      - --concurrency=20
+      - --cpu=1
+      - --memory=1Gi
+      - --cpu-boost              # faster cold starts, no extra cost at min 0
+      - --session-affinity
+      - --set-env-vars=VERTEXAI_PROJECT=${PROJECT_ID}
+      - --set-secrets=GOOGLE_PLACES_API_KEY=nomadready-places-key:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  dynamicSubstitutions: true   # so _IMAGE can use _REGION and _REPO
