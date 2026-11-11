@@ -174,7 +174,7 @@ class CityFindings(BaseModel):
     median_total_usd: float | None = Field(description="Median stay total among available listings.")
     work_hours_local: str | None
     hours_outside_8am_10pm: float | None
-    weather: str | None = Field(description="e.g. 'Feb avg high 16.6°C / low 9.8°C, 8.6 rainy days'")
+    weather: str | None = Field(description="In °F (avg_high_f / avg_low_f), e.g. 'Feb avg high 61.9°F / low 49.6°F, 8.6 rainy days'")
     advisory_level: int | None
     advisory_url: str | None
     neighbourhoods: list[NeighbourhoodFinding] = Field(description="1-3 best neighbourhoods for the brief.")
@@ -205,8 +205,8 @@ For a follow-up task, do just what it asks.
 Rules:
 - Every number you report must come from a tool result, copied exactly, with that result's citation ids
   in `cites`. For a neighbourhood, n_within_budget is the n_listings in find_stays' by_neighbourhood row.
-- Give 1-2 example_listing_urls per neighbourhood from find_stays' examples; if none are in that
-  neighbourhood, call find_stays again with neighbourhood set to it.
+- Give 2 example_listing_urls per neighbourhood from find_stays' examples: its 'affordable' one, then its
+  'typical' one. If none are in that neighbourhood, call find_stays again with neighbourhood set to it.
 - If a tool returns an error, try once more with fixed arguments; otherwise record it in `gaps`.
 - query_listings is only for what the other tools can't answer, at most 3 calls. Once you have the steps
   above, return your findings: you have a limited number of turns.

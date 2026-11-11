@@ -33,6 +33,8 @@
   /* Timeline bars, one hue per role */
   --c-lead: #0d6b57; --c-res: #2f6fbd; --c-writer: #8455bd; --c-verify: #b0611f;
   --bar-muted: #d6d3ca;
+  /* Weather and daylight */
+  --cold: #2f6aa8; --warm: #b5561c; --sun: #f3d27a; --night: #c9cdd8;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -41,6 +43,7 @@
     --line: #33322e; --accent: #5cc4a5; --accent-ink: #0d1f1a; --accent-soft: #18332b;
     --warn: #e3a94f; --warn-soft: #362a12; --bad: #f08a80; --bad-soft: #3a1d1a;
     --c-lead: #5cc4a5; --c-res: #7aa9e6; --c-writer: #b893e6; --c-verify: #e0a066; --bar-muted: #45443f;
+    --cold: #7fb0e8; --warm: #eb9a5e; --sun: #b8953a; --night: #2c3142;
     --shadow: none; color-scheme: dark;
   }
 }
@@ -49,6 +52,7 @@
   --line: #33322e; --accent: #5cc4a5; --accent-ink: #0d1f1a; --accent-soft: #18332b;
   --warn: #e3a94f; --warn-soft: #362a12; --bad: #f08a80; --bad-soft: #3a1d1a;
   --c-lead: #5cc4a5; --c-res: #7aa9e6; --c-writer: #b893e6; --c-verify: #e0a066; --bar-muted: #45443f;
+  --cold: #7fb0e8; --warm: #eb9a5e; --sun: #b8953a; --night: #2c3142;
   --shadow: none; color-scheme: dark;
 }
 
@@ -183,29 +187,97 @@ details.how .run { border: 0; box-shadow: none; border-top: 1px solid var(--line
 .city-head { display: flex; align-items: flex-start; gap: 12px; }
 .city-head .titles { flex: 1; min-width: 0; }
 .rank { font: 600 15px/1 var(--display); color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 7px 9px; margin-top: 3px; }
-.fit { font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; margin-top: 6px; }
+/* Result: search chips, ranking cards, side-by-side comparison, panels */
+.result { display: flex; flex-direction: column; gap: 18px; }
+.search { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); }
+.search .sc { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px; color: var(--ink); font-size: 13.5px; }
+.assumed { font-size: 13px; color: var(--muted); margin: -8px 0 0; }
+.rank-head { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 12px; flex-wrap: wrap; margin-top: 6px; }
+.rank-head h2 { font: 600 30px/1.15 var(--display); letter-spacing: -.01em; margin: 0; }
+.rank-head p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.ranking { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.rcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow); min-width: 0; }
+.rcard.on { border: 2px solid var(--accent); padding: 15px 17px; }
+.rcard-head { display: flex; align-items: center; gap: 10px; }
+.rnum { width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: var(--surface); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex: none; }
+.rcard h3 { font: 600 22px/1.15 var(--display); margin: 0; flex: 1; min-width: 0; }
+.rcard .verdict { margin: 0; font-size: 14.5px; line-height: 1.45; flex: 1; }
+.rstats { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); padding-top: 10px; }
+.rstats .k { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.rstats .v { font-weight: 650; font-size: 15.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fit { font-size: 12.5px; font-weight: 600; padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
 .fit.good { background: var(--accent-soft); color: var(--accent); }
 .fit.tight { background: var(--warn-soft); color: var(--warn); }
 .fit.poor { background: var(--bad-soft); color: var(--bad); }
-.glance { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0 16px; }
-.stats { flex: 2 1 380px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; align-content: start; }
-.stat { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; min-width: 0; }
-.stat .label { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-.stat .value { font: 600 26px/1.15 var(--display); font-variant-numeric: lining-nums; margin: 3px 0 2px; overflow-wrap: anywhere; }
-.stat .value small { font: 500 14px var(--display); color: var(--muted); margin-left: 3px; }
-.stat .value.long { font-size: 21px; white-space: nowrap; }
-.stat .sub { font-size: 12.5px; color: var(--muted); }
-.stat .sub a.cite { vertical-align: baseline; }
-.stat.warn .value { color: var(--warn); }
-figure.weather { flex: 1 1 280px; margin: 0; background: var(--surface-2); border-radius: 10px; padding: 10px 12px 8px; min-width: 0; }
-figure.weather svg { display: block; width: 100%; height: auto; }
-figure.weather figcaption { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
-figure.weather figcaption b { color: var(--ink); font-weight: 600; }
-.weather .bar { fill: var(--bar-muted); }
-.weather .bar.on { fill: var(--accent); }
-.weather .lbl { font-size: 10px; fill: var(--muted); font-family: system-ui, sans-serif; }
-.weather .lbl.on { fill: var(--ink); font-weight: 700; }
-.weather .val { font-size: 10px; fill: var(--ink); font-weight: 600; font-family: system-ui, sans-serif; }
+.cmp-btn { width: 100%; padding: 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 15px; cursor: pointer; }
+.cmp-btn:hover { border-color: var(--muted); }
+.cmp-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.compare { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px 22px; box-shadow: var(--shadow); }
+.compare-head { display: flex; justify-content: space-between; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-bottom: 16px; }
+.compare-head h2 { font: 600 24px/1.2 var(--display); margin: 0; }
+.compare-head label { font-size: 13.5px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+.compare-head select { border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; background: var(--surface); min-width: 160px; color: var(--ink); }
+.cgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 22px; }
+.cgrid.one { grid-template-columns: minmax(0, 1fr); }
+.ccol-head { display: flex; align-items: baseline; gap: 8px; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
+.ccol-head small { color: var(--muted); font-weight: 600; font-size: 12px; }
+.ccol-head h3 { font: 600 21px/1.2 var(--display); margin: 0; }
+.fcard { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.fcard.missing { color: var(--muted); font-size: 14px; display: flex; flex-direction: column; justify-content: center; }
+.fcard-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+.fcard h4 { margin: 0; font-size: 14px; font-weight: 650; }
+.fcard h4 a.cite { vertical-align: baseline; margin-left: 4px; }
+.fcard .tag { display: none; font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
+.better { font-size: 12px; font-weight: 600; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 1px 9px; white-space: nowrap; }
+.big { font-weight: 650; font-size: 30px; line-height: 1.15; font-variant-numeric: tabular-nums; margin: 2px 0 6px; }
+.big small { font-size: 13.5px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+.fsub { font-size: 13.5px; margin: 0; }
+.fsub.muted { color: var(--muted); }
+/* 24-hour day bar: work hours, the 8am-10pm window, daylight */
+.day { position: relative; height: 10px; border-radius: 5px; background: var(--surface-2); margin: 12px 0 4px; overflow: hidden; }
+.day i { position: absolute; top: 0; bottom: 0; }
+.day .window { background: var(--accent-soft); }
+.day .work { background: var(--accent); border-radius: 5px; top: 1px; bottom: 1px; }
+.day .sun { background: var(--sun); }
+.day.night { background: var(--night); }
+.day.night .work { background: var(--ink); opacity: .75; top: 3px; bottom: 3px; }
+.ticks { position: relative; height: 16px; font-size: 11.5px; color: var(--muted); margin-bottom: 8px; }
+.ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.ticks span:first-child { transform: none; }
+.ticks span:last-child { transform: translateX(-100%); }
+.trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 4px 0 8px; }
+.trio .k { font-size: 12.5px; color: var(--muted); }
+.trio .v { font-weight: 650; font-size: 24px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.trio .v.cold { color: var(--cold); }
+.trio .v.warm { color: var(--warm); }
+.trio .s { font-size: 12px; color: var(--muted); }
+.temps { position: relative; height: 10px; border-radius: 5px; background: var(--surface-2); margin: 8px 0 4px; }
+.temps i { position: absolute; top: 0; bottom: 0; border-radius: 5px; background: linear-gradient(90deg, var(--cold), var(--warm)); }
+.level { font: 600 22px/1 var(--display); color: var(--accent); white-space: nowrap; }
+.level.warn { color: var(--warn); }
+.level.bad { color: var(--bad); }
+.adv { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.adv p { margin: 0; font-size: 13.5px; }
+table.nbs { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; margin-top: 4px; }
+table.nbs th { text-align: left; font-weight: 400; font-size: 12.5px; color: var(--muted); padding: 4px 6px 6px 0; border-bottom: 1px solid var(--line); }
+table.nbs td { padding: 8px 6px 8px 0; border-bottom: 1px solid var(--line); }
+table.nbs tr:last-child td { border-bottom: 0; }
+table.nbs td:first-child { font-weight: 600; }
+table.nbs .lowc { color: var(--warn); font-size: 12px; }
+.ex-list { list-style: none; margin: 10px 0 0; padding: 10px 0 0; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; }
+.ex-list li { display: flex; flex-wrap: wrap; gap: 0 16px; }
+.ex-list b { font-weight: 600; flex-basis: 100%; }
+.ex-list .ex { white-space: nowrap; }
+.ex-list .kind { color: var(--muted); margin-right: 5px; text-transform: capitalize; }
+.more { display: flex; flex-wrap: wrap; gap: 8px; }
+.more .btn { padding: 9px 16px; font-size: 15px; border-radius: 10px; }
+.more .btn[aria-expanded="true"] { border-color: var(--ink); background: var(--surface-2); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
+.panel > h2 { font: 600 20px/1.2 var(--display); margin: 0 0 10px; }
+.panel.run-panel { padding: 0; overflow: hidden; }
+.panel.run-panel .run { border: 0; box-shadow: none; border-radius: 0; }
+.panel .report section { box-shadow: none; }
+.sources li.hl { background: var(--accent-soft); border-radius: 4px; }
 .report .limits { background: var(--surface-2); box-shadow: none; }
 .report .limits h2 { font-size: 16px; margin: 0 0 6px; }
 .report ul { padding-left: 20px; }
@@ -271,7 +343,12 @@ details.trip > summary span { font-weight: 400; color: var(--muted); font-size: 
   .tl-row { grid-template-columns: 96px 1fr 40px; gap: 6px; }
   .tl-axis { margin: 2px 46px 0 102px; }
   .report .city h2 { font-size: 24px; }
-  .stat .value { font-size: 22px; }
+  .compare { padding: 16px 14px; }
+  .cgrid { grid-template-columns: minmax(0, 1fr); }
+  .ccol-head { display: none; }
+  .fcard .tag { display: block; }
+  .rank-head h2 { font-size: 26px; }
+  .big { font-size: 26px; }
 }
 </style>
 </head>
@@ -282,7 +359,7 @@ details.trip > summary span { font-weight: 400; color: var(--muted); font-size: 
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>
       NomadReady
     </div>
-    <button class="btn" id="new-chat" type="button">New chat</button>
+    <button class="btn" id="new-chat" type="button">New search</button>
   </div>
 </header>
 
@@ -721,7 +798,7 @@ function makeRun() {
   };
 }
 
-/* ---------- The report: summary + a card per city + numbered citations + sources ---------- */
+/* ---------- Shared helpers for the result ---------- */
 
 const CITE_RE = /\[([A-Za-z0-9][A-Za-z0-9_.-]*(?:\s*[,;]\s*[A-Za-z0-9][A-Za-z0-9_.-]*)*)\](?!\()/g;
 
@@ -751,181 +828,432 @@ function stayMonths(brief) {
   return set;
 }
 
-/* Stat tiles: numbers read from the tool results by the server (scout/summary.py) */
-function glanceTiles(card, chips) {
-  const tile = (label, value, unit, sub, ids, cls = "") =>
-    h("div", { class: `stat ${cls}` }, h("div", { class: "label", text: label }),
-      h("div", { class: `value${String(value).length > 9 ? " long" : ""}` }, value, unit ? h("small", { text: unit }) : null),
-      h("div", { class: "sub" }, sub, chips(ids || [])));
-  const tiles = [];
-  const s = card.stays;
-  const where = s?.scope ? `${s.scope}: ` : "";  // set when the numbers cover one area, not the whole city
-  if (s?.median_total_usd != null) {
-    tiles.push(tile("Median stay", money(s.median_total_usd), null,
-      where + (s.p10_total_usd != null ? `cheapest 10% under ${money(s.p10_total_usd)}` : `${s.nights} nights`), s.cites));
-  }
-  if (s?.n_within_budget != null) {
-    tiles.push(tile("Within budget", num(s.n_within_budget), "stays", `${where}of ${num(s.n_available)} open, up to ${money(s.budget_usd)}`,
-      s.cites, s.n_within_budget < 5 ? "warn" : ""));
-  } else if (s?.n_available != null) {
-    tiles.push(tile("Stays open", num(s.n_available), null, `${where}${s.nights} nights, any price`, s.cites));
-  }
-  const sp = card.speed;
-  if (sp) {
-    tiles.push(tile("Fixed download", sp.min === sp.max ? num(sp.min) : `${num(sp.min)}–${num(sp.max)}`, "Mbps",
-      `median, ${sp.n_areas} recommended area${sp.n_areas > 1 ? "s" : ""}`, sp.cites));
-  }
-  const hr = card.hours;
-  if (hr?.local) {
-    const nextDay = hr.local.includes("+1 day");
-    tiles.push(tile("Your hours, local", hr.local.replace(/\s*\(\+1 day\)/, "").replace("-", "–"), null,
-      (nextDay ? "ends the next day, " : "") + (hr.outside ? `${hr.outside} h outside 8am–10pm` : "all within 8am–10pm"),
-      hr.cites, hr.outside > 2 ? "warn" : ""));
-  }
-  const ad = card.advisory;
-  if (ad?.level != null) {
-    tiles.push(tile("U.S. advisory", `Level ${ad.level}`, null,
-      /^https?:/i.test(ad.url || "") ? h("a", { href: ad.url, target: "_blank", rel: "noopener noreferrer", text: "travel.state.gov" }) : "",
-      ad.cites, ad.level >= 3 ? "warn" : ""));
-  }
-  return tiles;
+/* ---------- The result: your search, a ranking, a side-by-side comparison, then panels ---------- */
+
+const FIT = { good: "Ready", tight: "Tight", poor: "Poor fit" };
+const FIT_HELP = "The researcher's overall fit to your brief: budget, availability, work hours and internet";
+const ADVISORY = { 1: "Exercise normal precautions", 2: "Exercise increased caution", 3: "Reconsider travel", 4: "Do not travel" };
+const FEATURES = [["all", "All features"], ["cost", "Cost"], ["internet", "Home internet"], ["hours", "Work hours"],
+  ["weather", "Weather"], ["daylight", "Daylight"], ["advisory", "Travel advisory"], ["stay", "Where to stay"]];
+const ROOM = { "Entire home/apt": "Entire home", "Private room": "Private room", "Shared room": "Shared room", "Hotel room": "Hotel room" };
+const toF = (c) => c * 9 / 5 + 32;
+const degF = (c) => `${Math.round(toF(c))}°F`;
+const avg = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+const hrs = (x) => { const r = Math.round(x * 2) / 2; return `${r % 1 ? r.toFixed(1) : r} ${r === 1 ? "hour" : "hours"}`; };
+const minutesOf = (hhmm) => { const [H, M] = hhmm.split(":").map(Number); return H * 60 + M; };
+const shortTime = (hhmm) => { const [H, M] = hhmm.split(":").map(Number); return `${H % 12 || 12}${M ? `:${String(M).padStart(2, "0")}` : ""}`; };
+const ampm = (min) => { const H = Math.floor((min % 1440) / 60); return `${H % 12 || 12}${H < 12 ? "am" : "pm"}`; };
+const fmtDate = (iso, year = true) => new Date(iso + "T00:00:00").toLocaleDateString("en-US",
+  year ? { month: "short", day: "numeric", year: "numeric" } : { month: "short", day: "numeric" });
+const overlap = (a0, a1, b0, b1) => Math.max(0, Math.min(a1, b1) - Math.max(a0, b0));
+
+/* "14:00-22:00 (+1 day)" -> [840, 1320]: minutes after local midnight; the end may pass 1440 */
+function clockSpan(text) {
+  const m = String(text || "").match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+  if (!m) return null;
+  const s = minutesOf(m[1]);
+  let e = minutesOf(m[2]);
+  if (e <= s) e += 1440;
+  return [s, e];
 }
 
-/* A year of typical highs and lows, with the stay's months highlighted */
-function weatherFigure(cl, months) {
-  const NS = "http://www.w3.org/2000/svg";
-  const s = (tag, attrs, text) => {
-    const e = document.createElementNS(NS, tag);
-    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
-    if (text != null) e.textContent = text;
-    return e;
-  };
-  const W = 360, H = 132, top = 16, bottom = 32;
-  const lo = Math.floor(Math.min(...cl.months.map((m) => m.lo))) - 1;
-  const hi = Math.ceil(Math.max(...cl.months.map((m) => m.hi))) + 1;
-  const y = (v) => top + ((hi - v) / (hi - lo)) * (H - top - bottom);
-  const labelValues = months.size <= 3;
-  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
-    "aria-label": `Typical daily highs and lows by month; ${[...months].map((m) => MONTHS[m - 1]).join(", ")} highlighted` });
-  cl.months.forEach((m, i) => {
-    const on = months.has(m.m);
-    const x = i * 30 + 15;
-    const bar = s("rect", { x: x - 6, y: y(m.hi), width: 12, height: Math.max(y(m.lo) - y(m.hi), 3), rx: 6, class: `bar${on ? " on" : ""}` });
-    bar.append(s("title", {}, `${MONTHS[m.m - 1]}: high ${m.hi}°C, low ${m.lo}°C, ${m.rain} rainy days`));
-    svg.append(bar);
-    svg.append(s("text", { x, y: H - 6, "text-anchor": "middle", class: `lbl${on ? " on" : ""}` }, MONTHS[m.m - 1].slice(0, 1)));
-    if (on && labelValues) {
-      svg.append(s("text", { x, y: y(m.hi) - 4, "text-anchor": "middle", class: "val" }, `${Math.round(m.hi)}°`));
-      svg.append(s("text", { x, y: y(m.lo) + 12, "text-anchor": "middle", class: "val" }, `${Math.round(m.lo)}°`));
+function speedText(sp) {
+  if (!sp) return null;
+  const mid = (sp.min + sp.max) / 2;
+  return sp.max - sp.min <= 0.1 * mid ? `~${num(mid)} Mbps` : `${num(sp.min)}–${num(sp.max)} Mbps`;
+}
+
+/* City order and one-line verdicts from the report's "## City: verdict" headings (best first) */
+function reportOutline(markdown) {
+  const out = [];
+  for (const line of markdown.split("\n")) {
+    const m = line.match(/^##\s+(.+?)\s*$/);
+    if (!m) continue;
+    const text = m[1].replace(CITE_RE, "").replace(/\*\*/g, "").trim();
+    if (/can.?t tell|cannot tell|^sources$/i.test(text)) continue;
+    const parts = text.match(/^([^:]+):\s*(.+)$/);
+    out.push({ name: parts ? parts[1].trim() : text, verdict: parts ? parts[2].trim() : "" });
+  }
+  return out;
+}
+
+function orderCities(cards, outline) {
+  const ordered = [];
+  for (const o of outline) {
+    const card = cards.find((c) => !ordered.includes(c) && fold(o.name).includes(fold(c.city)));
+    if (card) ordered.push({ ...card, verdict: o.verdict });
+  }
+  for (const c of cards) if (!ordered.some((o) => o.city === c.city)) ordered.push({ ...c, verdict: "" });
+  return ordered;
+}
+
+function searchSummary(brief, cities) {
+  const b = brief || {};
+  const chips = [];
+  if (b.nights && b.check_in) chips.push(`${b.nights} nights from ${fmtDate(b.check_in)}`);
+  chips.push([b.budget_total_usd ? `${money(b.budget_total_usd)} total` : "No budget set",
+    ROOM[b.room_type]?.toLowerCase(), b.needs_workspace ? "workspace" : null].filter(Boolean).join(" · "));
+  const work = clockSpan(b.work_hours_home);
+  if (work && b.home_tz) {
+    chips.push(`Online ${shortTime(b.work_hours_home.split("-")[0])}–${shortTime(b.work_hours_home.split("-")[1])} `
+      + `${b.home_tz.split("/").pop().replace(/_/g, " ")} time`);
+  } else if (b.flexible_hours) chips.push("Flexible hours");
+  const names = cities.length ? cities.map((c) => c.city) : b.cities || [];
+  if (names.length) chips.push(names.join(" · "));
+  const out = [h("div", { class: "search" }, h("span", { text: "Your search" }), chips.map((t) => h("span", { class: "sc", text: t })))];
+  if (b.assumptions?.length) out.push(h("p", { class: "assumed", text: `Assumed: ${b.assumptions.join("; ")}` }));
+  return out;
+}
+
+/* A 24-hour bar. Segments: [startMin, endMin, class]; ends past midnight wrap round */
+function dayBar(segments, ticks, night = false) {
+  const bar = h("div", { class: `day${night ? " night" : ""}`, "aria-hidden": "true" });
+  for (const [s, e, cls] of segments) {
+    for (const [a, b] of [[s, Math.min(e, 1440)], [Math.max(s, 1440) - 1440, e - 1440]]) {
+      if (b > a) bar.append(h("i", { class: cls, style: `left:${(a / 1440) * 100}%;width:${((b - a) / 1440) * 100}%` }));
     }
-  });
-  const picked = cl.months.filter((m) => months.has(m.m));
-  let caption;
-  if (picked.length === 1) {
-    const m = picked[0];
-    caption = [h("b", { text: MONTHS[m.m - 1] }), `: highs ${Math.round(m.hi)}°C, lows ${Math.round(m.lo)}°C, ${m.rain} rainy days. `];
-  } else if (picked.length) {
-    caption = [h("b", { text: `${MONTHS[picked[0].m - 1].slice(0, 3)}–${MONTHS[picked[picked.length - 1].m - 1].slice(0, 3)}` }), " highlighted. "];
-  } else caption = [];
-  return h("figure", { class: "weather" }, svg,
-    h("figcaption", {}, caption, `Typical daily highs and lows, °C (Open-Meteo, ${cl.years}).`));
+  }
+  return [bar, h("div", { class: "ticks", "aria-hidden": "true" },
+    ticks.map(([min, label]) => h("span", { style: `left:${(min / 1440) * 100}%`, text: label })))];
 }
 
-function renderReport(markdown, sources, runId, usedCoworking, cities = [], brief = null) {
+/* Each feature: a title, its body, citation ids, and a score for "Better" (null: not ranked) */
+const FEATURE_BUILDERS = {
+  cost(c) {
+    const s = c.stays;
+    if (s?.median_total_usd == null) return null;
+    const parts = [];
+    if (s.p10_total_usd != null) parts.push(`Cheapest 10% under ${money(s.p10_total_usd)}`);
+    parts.push(s.n_within_budget != null ? `${num(s.n_within_budget)} of ${num(s.n_available)} open stays fit your budget`
+      : `${num(s.n_available)} open stays, any price`);
+    return {
+      title: s.nights ? `Cost for ${s.nights} nights` : "Cost of the stay", cites: s.cites, score: s.median_total_usd, lower: true,
+      body: [h("div", { class: "big" }, money(s.median_total_usd), h("small", { text: "median stay" })),
+        h("p", { class: "fsub", text: parts.join(" · ") }),
+        s.scope ? h("p", { class: "fsub muted", text: `Figures for ${s.scope} only.` }) : null],
+    };
+  },
+  internet(c) {
+    const sp = c.speed;
+    if (!sp) return null;
+    return {
+      title: "Home internet", cites: sp.cites, score: (sp.min + sp.max) / 2,
+      body: [h("div", { class: "big" }, sp.min === sp.max ? num(sp.min) : `${num(sp.min)}–${num(sp.max)}`, h("small", { text: "Mbps median download" })),
+        h("p", { class: "fsub", text: `Fixed broadband, across its ${sp.n_areas} recommended neighbourhood${sp.n_areas > 1 ? "s" : ""}` })],
+    };
+  },
+  hours(c, ctx) {
+    const hr = c.hours;
+    const span = clockSpan(hr?.local);
+    if (!span) return null;
+    const [s, e] = span;
+    const before = overlap(s, e, 0, 480) + overlap(s, e, 1440, 1440 + 480);  // incl. the next morning
+    const after = overlap(s, e, 1320, 1440);
+    let note = "All work hours fall between 8am and 10pm.";
+    if (hr.outside) {
+      const bits = [];
+      const fall = (m) => `${hrs(m / 60)} ${m === 60 ? "falls" : "fall"}`;
+      if (before) bits.push(`${fall(before)} before 8am`);
+      if (after) bits.push(`${fall(after)} after 10pm`);
+      note = bits.length ? `${bits.join(" and ")}.` : `${hrs(hr.outside)} outside 8am–10pm.`;
+      note = note[0].toUpperCase() + note.slice(1);
+    }
+    const label = ctx.work ? `Your ${ctx.work} in local time` : "Your work hours, local";
+    return {
+      title: label, cites: hr.cites, score: hr.outside ?? 0, lower: true,
+      body: [h("div", { class: "big", text: hr.local.replace(/\s*\(\+1 day\)/, " (+1 day)").replace("-", "–") }),
+        ...dayBar([[480, 1320, "window"], [s, e, "work"]], [[0, "12am"], [480, "8am"], [720, "noon"], [1320, "10pm"]]),
+        h("p", { class: "fsub", text: note })],
+    };
+  },
+  weather(c, ctx) {
+    const cl = c.climate;
+    const picked = cl ? cl.months.filter((m) => ctx.months.has(m.m)) : [];
+    if (!picked.length) return null;
+    const lo = avg(picked.map((m) => m.lo)), hi = avg(picked.map((m) => m.hi)), rain = avg(picked.map((m) => m.rain));
+    const one = picked.length === 1;
+    const label = one ? MONTHS[picked[0].m - 1] : `${MONTHS[picked[0].m - 1].slice(0, 3)}–${MONTHS[picked[picked.length - 1].m - 1].slice(0, 3)}`;
+    const dim = one ? new Date(ctx.year, picked[0].m, 0).getDate() : null;
+    const pos = (c2) => Math.min(100, Math.max(0, ((toF(c2) - 20) / 80) * 100));
+    const trend = !one ? (() => {
+      const cold = picked.reduce((a, b) => (b.hi < a.hi ? b : a)), warm = picked.reduce((a, b) => (b.hi > a.hi ? b : a));
+      return `Highs run from ${degF(cold.hi)} in ${MONTHS[cold.m - 1]} to ${degF(warm.hi)} in ${MONTHS[warm.m - 1]}.`;
+    })() : null;
+    return {
+      title: `Typical ${label} weather`, cites: cl.cites,
+      body: [h("div", { class: "trio" },
+        h("div", {}, h("div", { class: "k", text: "Daily low" }), h("div", { class: "v cold", text: degF(lo) }), h("div", { class: "s", text: `${Math.round(lo)}°C` })),
+        h("div", {}, h("div", { class: "k", text: "Daily high" }), h("div", { class: "v warm", text: degF(hi) }), h("div", { class: "s", text: `${Math.round(hi)}°C` })),
+        h("div", {}, h("div", { class: "k", text: "Rainy days" }), h("div", { class: "v", text: rain.toFixed(1) }), h("div", { class: "s", text: one ? `of ${dim}` : "per month" }))),
+        h("div", { class: "temps", "aria-hidden": "true" }, h("i", { style: `left:${pos(lo)}%;width:${Math.max(pos(hi) - pos(lo), 2)}%` })),
+        h("div", { class: "ticks", "aria-hidden": "true" },
+          [20, 40, 60, 80, 100].map((f) => h("span", { style: `left:${((f - 20) / 80) * 100}%`, text: f === 100 ? "100°F" : `${f}°` }))),
+        trend ? h("p", { class: "fsub", text: trend }) : null,
+        h("p", { class: "fsub muted", text: `Open-Meteo averages, ${cl.years}.` })],
+    };
+  },
+  daylight(c, ctx) {
+    const d = c.daylight;
+    if (!d) return null;
+    const sr = minutesOf(d.mid.sunrise), ss = minutesOf(d.mid.sunset);
+    const work = clockSpan(c.hours?.local);
+    const segs = [[sr, ss, "sun"]];
+    const notes = [];
+    if (work) {
+      const [s, e] = work;
+      segs.push([s, e, "work"]);
+      const lit = overlap(s, e, sr, ss) + overlap(s, e, sr + 1440, ss + 1440);
+      const total = e - s;
+      if (lit >= total) notes.push("Your whole workday is in daylight.");
+      else if (!lit) notes.push("Your whole workday is after dark.");
+      else notes.push(`${hrs(lit / 60).replace(/ hours?$/, "")} of your ${hrs(total / 60).replace(/ hours?$/, "")} work hours are in daylight.`);
+      if (e > ss && s < ss) notes.push(`You log off ${hrs((e - ss) / 60)} after sunset.`);
+      else if (s >= ss) notes.push(`Daylight is all before you start, from ${shortTime(d.mid.sunrise)}am.`);
+      else if (e <= ss) notes.push(`${hrs((ss - e) / 60)} of daylight left after work.`);
+    }
+    const drift = Math.abs(minutesOf(d.last.sunset) - minutesOf(d.first.sunset));
+    if (drift >= 20) notes.push(`Sunset moves from ${d.first.sunset} to ${d.last.sunset} over your stay.`);
+    const picked = c.climate ? c.climate.months.filter((m) => ctx.months.has(m.m) && m.sun != null) : [];
+    return {
+      title: "Daylight", cites: [...(d.cites || []), ...(c.climate?.cites || [])],
+      body: [h("div", { class: "big" }, `${d.mid.hours} h`, h("small", { text: `sunrise ${d.mid.sunrise} · sunset ${d.mid.sunset}` })),
+        ...dayBar(segs, [[0, "12am"], [sr, `↑ ${d.mid.sunrise}`], [ss, `↓ ${d.mid.sunset}`]], true),
+        notes.length ? h("p", { class: "fsub", text: notes.join(" ") }) : null,
+        h("p", { class: "fsub muted", text: `On ${fmtDate(d.mid.date, false)}, mid-stay.`
+          + (picked.length ? ` About ${avg(picked.map((m) => m.sun)).toFixed(1)} h of sunshine a day (Open-Meteo).` : "") })],
+    };
+  },
+  advisory(c) {
+    const ad = c.advisory;
+    if (ad?.level == null) return null;
+    const link = /^https?:/i.test(ad.url || "") ? h("a", { href: ad.url, target: "_blank", rel: "noopener noreferrer", text: "travel.state.gov" }) : null;
+    return {
+      title: "U.S. travel advisory", cites: ad.cites, score: ad.level, lower: true,
+      body: [h("div", { class: "adv" }, h("p", {}, ADVISORY[ad.level] || "", link ? [h("br"), link] : null),
+        h("span", { class: `level${ad.level >= 3 ? " bad" : ad.level === 2 ? " warn" : ""}`, text: `Level ${ad.level}` }))],
+    };
+  },
+  stay(c, ctx) {
+    const nbs = c.neighbourhoods || [];
+    if (!nbs.length) return null;
+    const budget = c.stays?.n_within_budget != null;
+    const cowork = nbs.some((n) => n.coworking_nearby != null);
+    const table = h("table", { class: "nbs" },
+      h("thead", {}, h("tr", {}, ["Neighbourhood", budget ? "In budget" : "Open", "Median", "Download", cowork ? "Coworking" : null]
+        .filter(Boolean).map((t) => h("th", { text: t })))),
+      h("tbody", {}, nbs.map((n) => h("tr", {},
+        h("td", { text: n.name }),
+        h("td", { text: n.n_within_budget != null ? num(n.n_within_budget) : "—" }),
+        h("td", { text: n.median_total_usd != null ? money(n.median_total_usd) : "—" }),
+        h("td", {}, n.median_down_mbps_fixed != null ? num(n.median_down_mbps_fixed) : "—",
+          n.low_confidence_speed ? h("span", { class: "lowc", title: "Few speed tests in this area", text: " (few tests)" }) : null),
+        cowork ? h("td", { text: n.coworking_nearby != null ? num(n.coworking_nearby) : "—" }) : null))));
+    const withEx = nbs.filter((n) => n.examples?.length);
+    const exList = withEx.length ? h("ul", { class: "ex-list" }, withEx.map((n) => h("li", {}, h("b", { text: n.name }),
+      n.examples.map((ex) => h("span", { class: "ex" }, h("span", { class: "kind", text: ex.kind || "example" }),
+        h("a", { href: ex.url, target: "_blank", rel: "noopener noreferrer",
+          text: `${money(ex.total_usd)} · ${ROOM[ex.room_type] || "Listing"}${ex.bedrooms ? `, ${ex.bedrooms} BR` : ""}` })))))) : null;
+    return {
+      title: "Where to stay", cites: [...(c.stays?.cites || []), ...(c.speed?.cites || [])],
+      body: [h("div", { class: "table-wrap", style: "border:0;margin:0" }, table), exList,
+        withEx.length ? h("p", { class: "fsub muted", style: "margin-top:6px", text: "Affordable: from the cheapest third in that neighbourhood. Typical: closest to its median." }) : null,
+        cowork ? h("p", { class: "attribution" }, "Coworking counts from ", h("span", { class: "gmaps", text: "Google Maps" }), ".") : null],
+    };
+  },
+};
+
+/* Which of two values is clearly better; null if they're about the same */
+function betterOf(a, b) {
+  if (!a || !b || a.score == null || b.score == null) return null;
+  const diff = Math.abs(a.score - b.score);
+  if (!diff || diff / Math.max(Math.abs(a.score), Math.abs(b.score), 1) < 0.03) return null;
+  return (a.score < b.score) === Boolean(a.lower) ? 0 : 1;
+}
+
+/* Markdown report -> the full report (cited) and the "can't tell you" section */
+function reportDoc(markdown, cite) {
   const body = markdown.split(/\n## Sources\s*\n/)[0];
-  const index = new Map(sources.map((s, i) => [s.id, i + 1]));
-  const chips = (ids) => ids.filter((id) => index.has(id)).map((id) => {
-    const s = sources[index.get(id) - 1];
-    return h("a", { class: "cite", href: `#${runId}-src-${index.get(id)}`, title: `${s.source}: ${s.detail}`, text: String(index.get(id)) });
-  });
-  const cardFor = new Map(cities.map((c) => [fold(c.city), c]));
-  const months = stayMonths(brief);
   const withCites = body.replace(CITE_RE, (match, group) => {
     const ids = group.split(/\s*[,;]\s*/);
     if (!ids.every((id) => id.includes("-") || id === "unverified")) return match;
-    return ids.map((id) => {
-      if (!index.has(id)) return `<span class="cite unverified" title="Not traced to a tool result">?</span>`;
-      const s = sources[index.get(id) - 1];
-      return `<a class="cite" href="#${runId}-src-${index.get(id)}" title="${esc(`${s.source}: ${s.detail}`)}">${index.get(id)}</a>`;
-    }).join("");
+    return ids.map(cite).join("");
   });
-
-  const out = h("div", { class: "report" });
+  const doc = h("div", { class: "report" });
+  let limits = null;
   if (!(window.marked && window.DOMPurify)) {
-    // Libraries didn't load: show the text as-is rather than unsanitized HTML
-    out.append(h("section", {}, h("pre", { style: "white-space:pre-wrap;margin:0", text: markdown })));
-    return out;
+    doc.append(h("section", {}, h("pre", { style: "white-space:pre-wrap;margin:0", text: markdown })));
+    return { doc, limits };
   }
   const tmp = h("div");
   tmp.innerHTML = DOMPurify.sanitize(marked.parse(withCites));
-
-  const headingText = (node) => {
-    const clone = node.cloneNode(true);
-    clone.querySelectorAll(".cite").forEach((c) => c.remove());
-    return clone.textContent.trim();
-  };
-  const isLimits = (text) => /can.?t tell|cannot tell/i.test(text);
-  const nCities = [...tmp.querySelectorAll("h2")].filter((n) => !isLimits(headingText(n))).length;
-  let rank = 0;
-
   let current = h("section", { class: "summary" });
-  out.append(current);
+  doc.append(current);
   for (const node of [...tmp.childNodes]) {
     if (node.nodeName === "H2") {
-      const text = headingText(node);
-      if (isLimits(text)) {
-        current = h("section", { class: "limits" }, h("h2", { text }));
-      } else {
-        rank += 1;
-        const m = text.match(/^([^:]+):\s*(.+)$/);
-        const name = m ? m[1].trim() : text;
-        const card = cardFor.get(fold(name));
-        const fitLabel = { good: "Good fit", tight: "Tight fit", poor: "Poor fit" }[card?.fit];
-        current = h("section", { class: "city" },
-          h("header", { class: "city-head" },
-            nCities > 1 ? h("span", { class: "rank", text: `#${rank}` }) : null,
-            h("div", { class: "titles" }, h("h2", { text: name }), m ? h("p", { class: "verdict", text: m[2] }) : null),
-            fitLabel ? h("span", { class: `fit ${card.fit}`, title: "The researcher's overall fit to your brief", text: fitLabel }) : null));
-        if (card) {
-          const tiles = glanceTiles(card, chips);
-          const glance = h("div", { class: "glance" },
-            tiles.length ? h("div", { class: "stats" }, tiles) : null,
-            card.climate ? weatherFigure(card.climate, months) : null);
-          if (glance.childNodes.length) current.append(glance);
-        }
+      const text = node.textContent.replace(/\d+$/, "").trim();
+      if (/can.?t tell|cannot tell/i.test(text)) {
+        limits = current = h("div", { class: "limits-body" });
+        continue;
       }
-      out.append(current);
-    } else if (node.nodeName === "TABLE") {
-      current.append(h("div", { class: "table-wrap" }, node));
-    } else if (node.nodeType === 1 || node.textContent.trim()) {
-      current.append(node);
-    }
+      current = h("section", { class: "city" }, node);
+      doc.append(current);
+    } else if (node.nodeName === "TABLE") current.append(h("div", { class: "table-wrap" }, node));
+    else if (node.nodeType === 1 || node.textContent.trim()) current.append(node);
   }
-  const summary = $(".summary", out);
+  const summary = $(".summary", doc);
   if (!summary.textContent.trim()) summary.remove();
   else summary.querySelectorAll("p").forEach((p) => { if (/^Assumed\b/i.test(p.textContent.trim())) p.classList.add("assumed"); });
+  return { doc, limits };
+}
 
-  if (sources.length) {
-    const list = h("ol", {}, sources.map((s, i) => {
-      const url = /^https?:/i.test(s.url || "") ? s.url : null;
-      return h("li", { id: `${runId}-src-${i + 1}` }, h("strong", { text: s.source }), `: ${s.detail}`,
-        url ? [" · ", h("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: new URL(url).hostname.replace(/^www\./, "") })] : null);
-    }));
-    const src = h("section", { class: "sources" }, h("h3", { text: "Sources" }), list);
-    if (usedCoworking || sources.some((s) => s.id.startsWith("google-places"))) {
-      src.append(h("p", { class: "attribution" }, "Coworking places from ", h("span", { class: "gmaps", text: "Google Maps" }), ". Ratings and hours are Google's; check each space's website for prices."));
-    }
-    out.append(src);
+function renderResult(ev, run, runId) {
+  const markdown = ev.response, sources = ev.sources || [], brief = run.brief;
+  const index = new Map(sources.map((s, i) => [s.id, i + 1]));
+  const citeHtml = (id) => {
+    if (!index.has(id)) return `<span class="cite unverified" title="Not traced to a tool result">?</span>`;
+    const s = sources[index.get(id) - 1];
+    return `<a class="cite" href="#${runId}-src-${index.get(id)}" title="${esc(`${s.source}: ${s.detail}`)}">${index.get(id)}</a>`;
+  };
+  const chips = (ids) => [...new Set(ids || [])].filter((id) => index.has(id)).map((id) => {
+    const s = sources[index.get(id) - 1];
+    return h("a", { class: "cite", href: `#${runId}-src-${index.get(id)}`, title: `${s.source}: ${s.detail}`, text: String(index.get(id)) });
+  });
+
+  const cities = orderCities(ev.cities || [], reportOutline(markdown));
+  const work = clockSpan(brief?.work_hours_home);
+  const ctx = {
+    months: stayMonths(brief),
+    year: brief?.check_in ? Number(brief.check_in.slice(0, 4)) : new Date().getFullYear(),
+    work: work ? `${shortTime(brief.work_hours_home.split("-")[0])}–${shortTime(brief.work_hours_home.split("-")[1])}` : null,
+  };
+  const root = h("div", { class: "result" }, searchSummary(brief, cities));
+
+  /* Ranking cards; pick up to two to compare */
+  let selected = cities.slice(0, 2).map((c) => c.city);
+  let feature = "all";
+  const cardEls = new Map();
+  const compareEl = h("section", { class: "compare", "aria-live": "polite" });
+  if (cities.length) {
+    root.append(h("div", { class: "rank-head" }, h("h2", { text: cities.length > 1 ? "Your ranking" : "Your city" }),
+      cities.length > 2 ? h("p", { text: "Pick any two cities to compare them below" }) : null));
+    const grid = h("div", { class: "ranking" });
+    cities.forEach((c, i) => {
+      const btn = cities.length > 1 ? h("button", { class: "cmp-btn", type: "button", onclick: () => toggle(c.city) }) : null;
+      const card = h("article", { class: "rcard" },
+        h("div", { class: "rcard-head" }, cities.length > 1 ? h("span", { class: "rnum", text: String(i + 1) }) : null,
+          h("h3", { text: c.city }), FIT[c.fit] ? h("span", { class: `fit ${c.fit}`, title: FIT_HELP, text: FIT[c.fit] }) : null),
+        h("p", { class: "verdict", text: c.verdict || "" }),
+        h("div", { class: "rstats" },
+          [["Median stay", c.stays?.median_total_usd != null ? money(c.stays.median_total_usd) : "—"],
+            ["Mbps down", speedText(c.speed)?.replace(" Mbps", "") || "—"],
+            ["Your hours", c.hours?.local ? c.hours.local.replace(/\s*\(\+1 day\)/, "+").replace("-", "–") : "—"]]
+            .map(([k, v]) => h("div", {}, h("div", { class: "k", text: k }), h("div", { class: "v", text: v })))),
+        btn);
+      cardEls.set(c.city, { card, btn });
+      grid.append(card);
+    });
+    root.append(grid, compareEl);
   }
 
+  function toggle(city) {
+    if (selected.includes(city)) { if (selected.length > 1) selected = selected.filter((x) => x !== city); }
+    else selected = [...selected, city].slice(-2);
+    draw();
+  }
+
+  function draw() {
+    for (const [city, { card, btn }] of cardEls) {
+      const on = selected.includes(city);
+      card.classList.toggle("on", on && cities.length > 1);
+      if (btn) { btn.setAttribute("aria-pressed", String(on)); btn.textContent = on ? "Comparing ✓" : "Add to compare"; }
+    }
+    const cols = cities.filter((c) => selected.includes(c.city));
+    const select = h("select", { "aria-label": "Features to show", onchange: (e) => { feature = e.target.value; draw(); } },
+      FEATURES.map(([k, label]) => h("option", { value: k, text: label, selected: k === feature })));
+    const grid = h("div", { class: `cgrid${cols.length < 2 ? " one" : ""}` },
+      cols.map((c) => h("div", { class: "ccol-head" }, cities.length > 1 ? h("small", { text: `#${cities.indexOf(c) + 1}` }) : null, h("h3", { text: c.city }))));
+    const keys = feature === "all" ? Object.keys(FEATURE_BUILDERS) : [feature];
+    let shown = 0;
+    for (const key of keys) {
+      const built = cols.map((c) => FEATURE_BUILDERS[key](c, ctx));
+      if (!built.some(Boolean)) continue;
+      shown += 1;
+      const win = cols.length === 2 ? betterOf(built[0], built[1]) : null;
+      built.forEach((f, i) => {
+        const tag = h("div", { class: "tag", text: cols[i].city });
+        if (!f) { grid.append(h("div", { class: "fcard missing" }, tag, "Not checked for this city.")); return; }
+        grid.append(h("div", { class: "fcard" }, tag,
+          h("div", { class: "fcard-head" }, h("h4", {}, f.title, chips(f.cites)), win === i ? h("span", { class: "better", text: "Better" }) : null),
+          f.body));
+      });
+    }
+    if (!shown) grid.append(h("p", { class: "fsub muted", text: "Nothing to show for this feature." }));
+    compareEl.replaceChildren(
+      h("div", { class: "compare-head" },
+        h("h2", { text: cols.length === 2 ? `${cols[0].city} vs ${cols[1].city}` : `${cols[0].city} in detail` }),
+        h("label", {}, "Show", select)),
+      grid);
+  }
+  if (cities.length) draw();
+
+  /* Panels under the comparison: one open at a time */
+  const { doc, limits } = reportDoc(markdown, citeHtml);
   const copy = h("button", { class: "btn small", type: "button", text: "Copy as Markdown" });
   copy.addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(markdown); copy.textContent = "Copied"; }
     catch { copy.textContent = "Couldn't copy"; }
     setTimeout(() => { copy.textContent = "Copy as Markdown"; }, 1500);
   });
-  out.prepend(h("div", { class: "report-tools" }, copy));
-  return out;
+  const panelDefs = [
+    ["report", "Full report", () => [h("div", { class: "report-tools" }, copy), doc]],
+    ["how", "How I got this", () => [h("p", { class: "fsub muted", style: "padding:12px 16px 0",
+      text: `${run.agents} agents · ${run.toolCalls} tool calls${ev.t != null ? ` · ${fmtSecs(ev.t)}` : ""}` }), run.el]],
+  ];
+  if (sources.length) {
+    panelDefs.push(["sources", "Sources", () => {
+      const list = h("ol", {}, sources.map((s, i) => {
+        const url = /^https?:/i.test(s.url || "") ? s.url : null;
+        return h("li", { id: `${runId}-src-${i + 1}` }, h("strong", { text: s.source }), `: ${s.detail}`,
+          url ? [" · ", h("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: new URL(url).hostname.replace(/^www\./, "") })] : null);
+      }));
+      const out = [h("div", { class: "sources" }, list)];
+      if (run.usedCoworking || sources.some((s) => s.id.startsWith("google-places"))) {
+        out.push(h("p", { class: "attribution" }, "Coworking places from ", h("span", { class: "gmaps", text: "Google Maps" }), ". Ratings and hours are Google's; check each space's website for prices."));
+      }
+      return out;
+    }]);
+  }
+  if (limits) panelDefs.push(["limits", "What this data can't tell you", () => [limits]]);
+
+  const more = h("div", { class: "more" });
+  const panels = new Map();
+  for (const [key, label, build] of panelDefs) {
+    const el = h("section", { class: `panel${key === "how" ? " run-panel" : ""}`, hidden: true, id: `${runId}-${key}` }, build());
+    const btn = h("button", { class: "btn", type: "button", "aria-expanded": "false", "aria-controls": `${runId}-${key}`, text: label,
+      onclick: () => openPanel(panels.get(key).el.hidden ? key : null) });
+    panels.set(key, { el, btn });
+    more.append(btn);
+  }
+  function openPanel(key) {
+    for (const [k, p] of panels) { p.el.hidden = k !== key; p.btn.setAttribute("aria-expanded", String(k === key)); }
+  }
+  root.append(more, ...[...panels.values()].map((p) => p.el));
+  if (!cities.length) openPanel("report");  // nothing structured to show: lead with the written report
+
+  /* Citation chips anywhere open the Sources panel at that source */
+  root.addEventListener("click", (e) => {
+    const a = e.target.closest("a.cite");
+    if (!a || !panels.has("sources")) return;
+    e.preventDefault();
+    openPanel("sources");
+    const li = document.getElementById(a.getAttribute("href").slice(1));
+    if (li) {
+      li.classList.add("hl");
+      li.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => li.classList.remove("hl"), 1800);
+    }
+  });
+  return root;
 }
 
 /* ---------- Streaming /run ---------- */
@@ -975,10 +1303,9 @@ async function ask(message) {
       $("#f-text").focus();
       return;
     }
-    const report = renderReport(ev.response, ev.sources || [], runId, run.usedCoworking, ev.cities || [], run.brief);
-    turn.prepend(report);
-    wrapHow(run, turn, ev.t);
-    report.scrollIntoView({ behavior: "smooth", block: "start" });
+    const view = renderResult(ev, run, runId);  // moves the live run into its "How I got this" panel
+    turn.append(view);
+    view.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   try {

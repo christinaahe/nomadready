@@ -72,7 +72,7 @@ def describe_end(tool: str, args: dict, result: str) -> str:
             case "neighbourhood_speed":
                 return f"speeds for {len(r.get('neighbourhoods', [])) or 1} neighbourhood(s)"
             case "month_climate":
-                return (f"{r.get('month')}: highs {r.get('avg_high_c')}°C, lows {r.get('avg_low_c')}°C, "
+                return (f"{r.get('month')}: highs {r.get('avg_high_f')}°F, lows {r.get('avg_low_f')}°F, "
                         f"{r.get('rainy_days_per_month')} rainy days")
             case "travel_advisory":
                 return f"{r.get('country')}: Level {r.get('level')}"

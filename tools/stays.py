@@ -8,6 +8,7 @@ import mercantile
 from tools.db import cite_airbnb, cite_fx, cite_ookla, city_info, cursor, error, fold, fx_row, rows, to_json
 
 LOW_CONFIDENCE_TESTS = 10  # fewer Ookla tests than this in a tile: low confidence
+EXAMPLE_NEIGHBOURHOODS = 8  # neighbourhoods (most listings first) that get an affordable + a typical example
 MIN_NIGHTLY_USD = 1  # below this a price is broken data. ($1-10 is real: dorm beds and rooms in Istanbul, Bangkok, ...)
 DEFAULT_MAX_BEDROOMS = 2  # one person (or a couple) with room for an office; studios (0 or unknown) are kept
 
@@ -113,11 +114,36 @@ def find_stays(
             round(avg(case when tests < {LOW_CONFIDENCE_TESTS} then 1 else 0 end), 2) share_low_confidence,
             count(*) filter (where wifi_mbps_listed is not null) n_with_airbnb_wifi_test,
             round(median(rating), 2) median_rating
-        from ok group by neighbourhood order by n_listings desc limit 15""")
-    examples = q(f"""select listing_id, name, listing_url, neighbourhood, neighbourhood_group, room_type, bedrooms,
-            round(nightly_usd) nightly_usd, round(total_usd) total_usd, has_workspace,
-            wifi_mbps_listed, round(avg_d_mbps) tile_down_mbps_fixed, tests tile_tests, rating, n_reviews
-        from ok order by (n_reviews >= 5 and rating >= 4.7) desc, total_usd limit 5""")
+        from ok group by neighbourhood order by n_listings desc, neighbourhood limit 15""")
+    # Two examples per neighbourhood (the 8 with the most listings): an affordable one from the
+    # cheapest third and a typical one from the middle third, closest to the neighbourhood's median.
+    # Well-rated listings (5+ reviews, 4.7+) go first within each.
+    examples = q(f""",
+        top as (select neighbourhood from ok group by neighbourhood
+                order by count(*) desc, neighbourhood limit {EXAMPLE_NEIGHBOURHOODS}),
+        ranked as (
+            select *, coalesce(n_reviews >= 5 and rating >= 4.7, false) well_rated,
+                   percent_rank() over (partition by neighbourhood order by total_usd) pr,
+                   median(total_usd) over (partition by neighbourhood) nb_median
+            from ok where neighbourhood in (select neighbourhood from top)),
+        typical as (
+            select *, 'typical' kind, row_number() over (partition by neighbourhood
+                       order by well_rated desc, abs(total_usd - nb_median), listing_id) rn
+            from ranked where pr > 1/3 and pr <= 2/3),
+        -- the same room type as the typical pick where possible (not a dorm bed vs. an apartment)
+        affordable as (
+            select r.*, 'affordable' kind, row_number() over (partition by r.neighbourhood
+                       order by coalesce(r.room_type = t.room_type, false) desc, r.well_rated desc,
+                                r.total_usd, r.listing_id) rn
+            from ranked r left join (select neighbourhood, room_type from typical where rn = 1) t
+                 using (neighbourhood)
+            where r.pr <= 1/3),
+        picks as (select * from typical union all select * from affordable)
+        select p.kind, listing_id, name, listing_url, p.neighbourhood, room_type, bedrooms,
+            round(nightly_usd) nightly_usd, round(total_usd) total_usd, round(nb_median) neighbourhood_median_usd,
+            has_workspace, round(avg_d_mbps) tile_down_mbps_fixed, rating, n_reviews
+        from picks p join (select neighbourhood, row_number() over () ord from top) t using (neighbourhood)
+        where rn = 1 order by t.ord, p.kind""")
 
     return to_json({
         "city": c["city"],
@@ -139,6 +165,9 @@ def find_stays(
             "room_type is set; check room_type before calling a cheap listing an apartment."
             + (f" Only listings with at most {max_bedrooms} bedrooms (studios included)." if max_bedrooms is not None else ""),
             f"Listings under ${MIN_NIGHTLY_USD}/night are excluded as broken prices.",
+            f"examples: for the {EXAMPLE_NEIGHBOURHOODS} neighbourhoods with the most listings, an 'affordable' one "
+            "(cheapest third) and a 'typical' one (closest to that neighbourhood's median), within budget. For "
+            "another neighbourhood, call again with neighbourhood set.",
             "neighbourhood_group, when set, is the municipality or district. Some cities' data covers the wider "
             "metro area (e.g. Lisbon includes Sintra and Cascais); filter with neighbourhood=<group> for the city proper.",
         ],

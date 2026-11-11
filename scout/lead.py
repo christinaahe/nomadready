@@ -86,15 +86,28 @@ FIELDS = (("n_within_budget", "n_listings"), ("median_total_usd", "median_total_
           ("median_down_mbps_fixed", "median_down_mbps_fixed"))
 
 
+def _example_pair(found: list[tuple[dict, bool]]) -> list[str]:
+    """The affordable then the typical example's URL, preferring calls that used the brief's budget.
+    (Examples without a `kind`, from an older tool, count as affordable.)"""
+    on_budget = [ex for ex, ok in found if ok]
+    pool = on_budget or [ex for ex, _ in found]
+    pair = []
+    for kind in ("affordable", "typical"):
+        ex = next((e for e in pool if e.get("kind", "affordable") == kind and e.get("listing_url")), None)
+        if ex and ex["listing_url"] not in pair:
+            pair.append(ex["listing_url"])
+    return pair
+
+
 def reconcile(findings, state: Research, agent_name: str):
     """Fix neighbourhood numbers a researcher garbled while copying (seen in testing: 1,121 for a
-    tool's 1,799), and fill in missing example links.
+    tool's 1,799), and set each neighbourhood's example links to the tool's affordable + typical pair.
 
     A researcher may call find_stays several times with different filters, so a reported number is
     kept if it matches ANY of its own find_stays rows for that neighbourhood. Only a number that
     matches none is replaced, with the row from a call that used the brief's budget."""
     rows_for: dict[str, list[tuple[dict, bool]]] = {}  # neighbourhood -> [(row, used the brief's budget)]
-    examples: dict[str, list[str]] = {}
+    examples: dict[str, list[tuple[dict, bool]]] = {}  # neighbourhood -> [(example, used the brief's budget)]
     budget = state.brief.get("budget_total_usd")
     for call in state.tool_calls:
         if call["agent"] != agent_name or call["name"] != "find_stays":
@@ -107,7 +120,7 @@ def reconcile(findings, state: Research, agent_name: str):
         for row in data.get("by_neighbourhood", []):
             rows_for.setdefault(fold(row["neighbourhood"]), []).append((row, on_budget))
         for ex in data.get("examples", []):
-            examples.setdefault(fold(ex["neighbourhood"]), []).append(ex["listing_url"])
+            examples.setdefault(fold(ex["neighbourhood"]), []).append((ex, on_budget))
 
     fixed = []
     for nb in findings.neighbourhoods:
@@ -122,8 +135,9 @@ def reconcile(findings, state: Research, agent_name: str):
                 setattr(nb, field, preferred[key])
         if preferred is not None:
             nb.low_confidence_speed = (preferred.get("share_low_confidence") or 0) > 0.3
-        if not nb.example_listing_urls:
-            nb.example_listing_urls = examples.get(fold(nb.name), [])[:2]
+        picked = _example_pair(examples.get(fold(nb.name), []))
+        if picked:
+            nb.example_listing_urls = picked
     state.corrections.extend(f"{agent_name}: {f}" for f in fixed)
     return findings
 

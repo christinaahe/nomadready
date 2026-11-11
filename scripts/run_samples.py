@@ -136,11 +136,18 @@ def redact_places(text: str, state) -> str:
     return strip_places_content(text, names)
 
 
+_NAME_WORD = r"[A-ZÀ-Þ][\w'’&.-]*"  # a capitalised word (accents included)
+PLACES_NAME_RE = re.compile(rf"(?<![\w\]]){_NAME_WORD}(?: (?:de|da|do|dos|das|of|the|&|\d\w*|{_NAME_WORD}))* "
+                            r"(?=\[google-places-)")
+
+
 def strip_places_content(text: str, names: set[str] = frozenset()) -> str:
     """Remove place names, star ratings and review counts (Google Places content); keep counts of
     spaces found, which are tallies of our own search results."""
     for name in sorted(names, key=len, reverse=True):
         text = re.sub(re.escape(name), "[a coworking space]", text)
+    # Fallback for names the Writer reworded: any capitalised name right before a Places citation
+    text = PLACES_NAME_RE.sub("[a coworking space] ", text)
     text = re.sub(r"(?:rated |a |an )?\d(?:\.\d)?[- ]?stars?(?: rating)?(?: (?:across|with|from) [\d,]+ (?:reviews|ratings))?",
                   "[rating omitted]", text)
     return re.sub(r"\b[\d,]+ (?:Google )?(?:reviews|ratings)\b", "[rating omitted]", text)

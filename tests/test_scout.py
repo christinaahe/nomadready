@@ -183,6 +183,32 @@ def test_reconcile_keeps_a_number_from_another_of_the_researchers_calls():
     assert nb.n_within_budget == 1 and nb.median_total_usd == 680.0 and not s.corrections
 
 
+def test_reconcile_links_the_affordable_then_typical_example_and_the_writer_gets_their_prices():
+    from scout.summary import listing_examples
+
+    s = _state_with_find_stays([PALERMO])
+    url = "https://www.airbnb.com/rooms/"
+    s.tool_calls[0]["result"] = json.dumps({
+        "stay": {"nights": 28}, "by_neighbourhood": [PALERMO],
+        "citations": [{"id": "airbnb-buenos-aires"}, {"id": "ookla-fixed-2026-Q3"}],
+        "examples": [{"kind": "typical", "neighbourhood": "Palermo", "listing_url": url + "2", "total_usd": 1889.0,
+                      "room_type": "Entire home/apt"},
+                     {"kind": "affordable", "neighbourhood": "Palermo", "listing_url": url + "1", "total_usd": 990.0,
+                      "room_type": "Entire home/apt"}]})
+    nb = NeighbourhoodFinding(name="Palermo", n_within_budget=1799, median_total_usd=1889.0,
+                              median_down_mbps_fixed=273.0, low_confidence_speed=False, coworking_nearby=None,
+                              why="", example_listing_urls=[url + "9"], cites=[])
+    findings = CityFindings(city="Buenos Aires", fit="good", summary="", n_available=1, n_within_budget=1,
+                            median_total_usd=1, work_hours_local=None, hours_outside_8am_10pm=None, weather=None,
+                            advisory_level=None, advisory_url=None, neighbourhoods=[nb], facts=[], gaps=[])
+    reconcile(findings, s, "Researcher-Buenos Aires")
+    assert nb.example_listing_urls == [url + "1", url + "2"]
+    s.findings["Researcher-Buenos Aires"] = findings
+    ex = listing_examples(s)
+    assert ex[url + "1"]["kind"] == "affordable" and ex[url + "1"]["total_usd"] == 990.0
+    assert ex[url + "2"]["cites"] == ["airbnb-buenos-aires"] and ex[url + "2"]["nights"] == 28
+
+
 # --- the page's city cards: numbers come from tool results, not retyped findings ---
 
 
@@ -219,6 +245,37 @@ def test_city_cards_use_the_matching_city_wide_call():
     assert (card["speed"]["min"], card["speed"]["max"]) == (286.0, 336.0)
     assert card["hours"]["local"] == "14:00-22:00" and card["advisory"]["level"] == 1
     assert len(card["climate"]["months"]) == 12
+    assert card["climate"]["months"][1]["daylight"] > 0
+    assert [n["name"] for n in card["neighbourhoods"]] == ["Arroios", "Estrela"]
+    assert card["daylight"] is None  # no stay dates in this brief
+
+
+def test_sun_times_match_published_values():
+    from datetime import date
+    from scout.summary import sun_times
+
+    # Lisbon, June 21 2027: sunrise 06:11, sunset 21:05 (timeanddate.com); NOAA's equations are good to ~2 min
+    rise, sets = sun_times(38.7223, -9.1393, date(2027, 6, 21), "Europe/Lisbon")
+    assert abs((rise.hour * 60 + rise.minute) - (6 * 60 + 11)) <= 3
+    assert abs((sets.hour * 60 + sets.minute) - (21 * 60 + 5)) <= 3
+
+
+@pytest.mark.skipif(not DB_PATH.exists(), reason="database not built")
+def test_city_cards_daylight_for_the_stay_is_cited():
+    from scout.summary import city_cards
+
+    s = Research()
+    s.brief = {"check_in": "2027-04-05", "check_out": "2027-04-19"}
+    s.findings["Researcher-Lisbon"] = CityFindings(
+        city="Lisbon", fit="good", summary="", n_available=1, n_within_budget=1, median_total_usd=1,
+        work_hours_local=None, hours_outside_8am_10pm=None, weather=None, advisory_level=None, advisory_url=None,
+        neighbourhoods=[], facts=[], gaps=[])
+    [card] = city_cards(s)
+    d = card["daylight"]
+    assert (d["first"]["date"], d["last"]["date"]) == ("2027-04-05", "2027-04-18")
+    assert d["first"]["sunset"] < d["last"]["sunset"]  # days lengthen in April
+    assert 12 < d["mid"]["hours"] < 14
+    assert d["cites"] == ["solar-lisbon"] and "NOAA" in s.citations["solar-lisbon"]["source"]
 
 
 # --- hooks: /chat's tool_calls ---

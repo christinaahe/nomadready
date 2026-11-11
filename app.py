@@ -150,7 +150,7 @@ async def run(request: ChatRequest):
                 # Sources: what the report cites, then anything only the tiles cite
                 ids = cited_ids(response)
                 for card in cities:
-                    for part in ("stays", "speed", "hours", "advisory"):
+                    for part in ("stays", "speed", "hours", "advisory", "climate", "daylight"):
                         ids += [i for i in ((card.get(part) or {}).get("cites") or []) if i not in ids]
                 sources = [{"id": cid, **state.citations[cid]} for cid in ids if cid in state.citations]
                 yield _sse({"type": "done", "response": response, "session_id": session_id,

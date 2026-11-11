@@ -97,6 +97,22 @@ def test_find_stays_filters():
         assert ex["has_workspace"] and ex["room_type"] == "Entire home/apt" and ex["bedrooms"] >= 1
 
 
+def test_examples_are_an_affordable_and_a_typical_listing_per_neighbourhood():
+    data = ok(find_stays("Mexico City", "2027-03-01", "2027-03-29", max_total_usd=1500))
+    by_nb: dict[str, dict] = {}
+    for ex in data["examples"]:
+        assert ex["kind"] not in by_nb.setdefault(ex["neighbourhood"], {})
+        by_nb[ex["neighbourhood"]][ex["kind"]] = ex
+    assert 1 < len(by_nb) <= 8
+    top = data["by_neighbourhood"][0]
+    pair = by_nb[top["neighbourhood"]]
+    a, t = pair["affordable"], pair["typical"]
+    assert a["total_usd"] < t["total_usd"] <= 1500
+    assert t["neighbourhood_median_usd"] == top["median_total_usd"]
+    assert abs(t["total_usd"] - top["median_total_usd"]) < 0.25 * top["median_total_usd"]
+    assert a["room_type"] == t["room_type"]  # not a dorm bed next to an apartment
+
+
 def test_shared_rooms_included_and_filterable():
     cheap = ok(find_stays("Istanbul", "2027-01-10", "2027-01-24", 300))  # budget travelers: dorms and rooms count
     assert cheap["n_within_budget"] > 0

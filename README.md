@@ -20,10 +20,10 @@ NomadReady answers "which of these cities work for me, and where in each should 
 
 Open the page and either fill in **Trip details** (cities, month, length, budget, online hours and time zone, workspace, coworking) or just type a question. You can also click one of the examples. A rough time and length are enough: "a few weeks this summer" works. While it runs, you can watch each agent work: a timeline and one lane per agent, with every tool call and its result. The answer includes:
 
-- **One card per city:** rank, fit, headline numbers (median stay cost, stays within budget, fixed download speed, your work hours locally, advisory level) and a 12-month weather strip.
-- **A table of the best neighbourhoods,** with example listings.
-- **"What this data can't tell you."**
-- **Numbered citations,** each linking to its source.
+- **Your search** as chips (dates, budget and room type, online hours, cities), plus anything the agent assumed.
+- **A ranking:** one card per city, best first, with its fit, a one-line verdict, median stay cost, download speed and your work hours locally.
+- **A side-by-side comparison** of any two cities (the top two to start; click "Add to compare" on another). A **Show** menu narrows it to one feature. Cards: cost of the stay, home internet, work hours on a 24-hour bar, typical weather (°F, with °C), daylight (sunrise, sunset, and how much of your workday is in daylight), the U.S. travel advisory, and where to stay. "Where to stay" is a neighbourhood table with two example listings each: an affordable one (cheapest third, same room type) and a typical one (nearest that neighbourhood's median). Where the difference is clear, a "Better" badge marks the stronger city on cost, internet, work hours and advisory.
+- **Panels** for the full written report, how the agents got there, the numbered sources, and "What this data can't tell you". Every number carries a citation chip that opens its source.
 
 If the question is too vague ("somewhere warm and cheap?"), it asks for what's missing first.
 
@@ -123,20 +123,20 @@ Each sample was run through NomadReady and through **the same model (Gemini 3.5 
 
 **Expected answer.** These are whole 1BR places with a dedicated workspace, open Feb 1 – Mar 1, 2027 (28 nights), with a $2,500 budget:
 
-| | Buenos Aires | Mexico City | Lisbon (city proper) |
+| | Buenos Aires | Mexico City | Lisbon: city proper · whole metro area |
 |---|---|---|---|
-| Stays open / within $2,500 | 7,439 / **4,779** | 7,251 / **3,328** | 2,361 / **46** |
-| Median stay total (10th pct) | $2,124 ($1,298) | $2,635 ($1,454) | $5,212 ($3,344) |
+| Stays open / within $2,500 | 7,439 / **4,779** | 7,251 / **3,328** | 2,361 / **46** · 3,204 / **113** |
+| Median stay total (10th pct) | $2,124 ($1,298) | $2,635 ($1,454) | $5,212 ($3,344) · $4,998 ($3,111) |
 | Best-supplied neighbourhoods (in budget, median, fixed down) | Palermo 1,398 · $1,882 · 271 Mbps | Cuauhtémoc 1,493 · $2,007 · 196 Mbps | Parque das Nações 10 · $2,057 · 406 Mbps |
 | 9–5 Eastern in local time | 11:00–19:00 | 08:00–16:00 | 14:00–22:00 |
-| February high / low | 27.9 / 20.1 °C | 24.5 / 7.2 °C | 16.6 / 9.8 °C |
+| February high / low | 82 / 68 °F (27.9 / 20.1 °C) | 76 / 45 °F (24.5 / 7.2 °C) | 62 / 50 °F (16.6 / 9.8 °C) |
 | U.S. advisory | Level 1 | Level 2 | Level 1 |
 
-Sources: `listings` + `availability` (Inside Airbnb), `speed_tiles` (Ookla) joined on quadkey, `fx_rates`, `climate` (Open-Meteo), State Dept advisories API, IANA time zones. For the whole Lisbon metro area, which also includes Cascais, Sintra and other towns, it's 3,204 open and 113 within budget.
+Sources: `listings` + `availability` (Inside Airbnb), `speed_tiles` (Ookla) joined on quadkey, `fx_rates`, `climate` (Open-Meteo), State Dept advisories API, IANA time zones. Lisbon's data covers the whole metro area, including Cascais, Sintra and other towns; either scope is a correct answer as long as the report says which one it used.
 
-| NomadReady (138 s: Lead + 3 parallel Researchers + Writer, 28 tool calls) | Same model, no tools |
+| NomadReady (166 s: Lead + 3 parallel Researchers + a Lisbon follow-up + Writer, 30 tool calls) | Same model, no tools |
 |---|---|
-| Ranks **Buenos Aires** first ("4,779 listings under budget"), then Mexico City (3,328), then **Lisbon as a very tight fit: "only 46 listings fall within the budget out of 2,361"**, median $5,212. Neighbourhood tables match the expected values exactly (Palermo 1,398 · $1,882 · 271 Mbps; Cuauhtémoc 1,493 · $2,007 · 196 Mbps; Parque das Nações 10 · $2,057 · 406 Mbps). Notes that many cheap Parque das Nações stays are boats, and that prices exclude monthly discounts. | Ranks **Mexico City** first: "$2,500 is a very strong budget… a beautiful, modern 1BR… in Roma Norte, Condesa, or Polanco" (the data's median is $2,635, over budget). For Lisbon: "**$2,500 is a healthy budget**… a great 1BR with a workspace in central areas" (in the data, 2% of open 1BRs with a workspace fit). Work hours are right; internet is "Fiber common in Roma/Condesa", with no measurements. |
+| Ranks **Buenos Aires** first (4,779 in budget, median $2,124), then Mexico City (3,328, median $2,635), then **Lisbon as a tight fit: "only 113 options under budget in the metropolitan area"**, median $4,998 (10th percentile $3,111). These match the expected values; this run used Lisbon's whole metro area. The Buenos Aires and Mexico City neighbourhood tables match exactly (Palermo 1,398 · $1,882 · 271 Mbps; Cuauhtémoc 1,493 · $2,007 · 196 Mbps). For Lisbon, a follow-up Researcher picked central neighbourhoods with only 3–5 stays in budget each (Estrela, Campo de Ourique, Arroios), not Parque das Nações. Each neighbourhood gets an affordable and a typical example listing (Palermo: $827 and $1,883). Temperatures in °F (Buenos Aires highs around 82°F). | Ranks **Mexico City** first: "A stylish 1BR in prime, safe neighborhoods… will cost **$1,200 – $1,600**" (the data's median for the month is $2,635). For Lisbon: "a nice 1BR with a dedicated workspace in central areas… for around **$1,500 – $1,800**" (in the data, 113 of 3,204 open 1BRs with a workspace fit under $2,500). Buenos Aires 1BRs with a pool for "$800 – $1,200" (the median is $2,124). No measured internet speeds: "ask for a screenshot of a speed test". |
 
 ### 2. Neighbourhood drill-down
 
@@ -154,21 +154,21 @@ Sources: `listings` + `availability` (Inside Airbnb), `speed_tiles` (Ookla) join
 
 Sources: `listings` + `availability` ⨝ `speed_tiles` on quadkey, grouped by `neighbourhood` (Inside Airbnb's neighbourhoods here are boroughs).
 
-| NomadReady (168 s, 7 tool calls) | Same model, no tools |
+| NomadReady (76 s, 5 tool calls) | Same model, no tools |
 |---|---|
-| **Benito Juárez 802 · $1,061 · 219 Mbps; Miguel Hidalgo 499 · $1,096 · 214 Mbps; Cuauhtémoc 1,735 · $1,061 · 201 Mbps**, all high-confidence speeds, with example listings. These match the expected values; it chose the three large central boroughs over two small outer ones with similar speeds. Also gives the citywide 5,528 of 17,739 in budget, and says work hours weren't checked because none were given. | Names colonias (Narvarte, Escandón, Juárez, Roma Sur, Del Valle): "You can easily get 200–500 Mbps", "Speeds up to 1 Gbps are available", "$1,000–$1,300 USD" for a 1–2BR. Plausible local knowledge, but every number is unsourced and none comes from availability for March. |
+| **Cuauhtémoc 1,735 · $1,061 · 201 Mbps; Benito Juárez 802 · $1,061 · 219 Mbps; Coyoacán 560 · $1,050 · 197 Mbps**, all high-confidence speeds. Each has an affordable and a typical private room (Cuauhtémoc: $407 and $1,061). The numbers are right, and it also gives the citywide 5,528 of 17,739 in budget. **The weak spot:** asked for the *fastest* internet, it picked the three boroughs with the most stays, so Miguel Hidalgo (499 stays, 214 Mbps, second fastest) is missing and Coyoacán (197 Mbps) is in. An earlier run of the same question returned Benito Juárez, Miguel Hidalgo and Cuauhtémoc. It says work hours weren't checked because none were given. | Reads the budget as "**$1,500 USD per month**" and names colonias (Narvarte, Juárez, Polanco…): "You can easily get **200 to 500 Mbps** symmetrical speeds", fiber "up to 1 Gbps", 1–2BRs for "$1,000–$1,300 USD". Plausible local knowledge, but every number is unsourced and none comes from availability for March. |
 
 ### 3. Partially answerable
 
 > Can I stay in Lisbon for 6 months starting in January, and is the coworking scene good?
 
-**Expected answer.** Housing: 3,640 listings in Lisbon proper are open for the whole 182 nights from Jan 1, 2027 (5,078 in the metro area). The median 6-month total is $28,012 and the cheapest 10% are under $13,264, at snapshot nightly rates, so monthly discounts would lower these. The central options are Santa Maria Maior (875 stays, median $32,655, 268 Mbps) and Arroios (480, $23,267, 286 Mbps). January averages 15.2 / 9.0 °C. **Coworking:** live Google Maps results near those neighbourhoods (17–20 spaces each at the time of the run). **Visas are not in any of the data**, so "can I legally stay 6 months?" must be declined, not answered.
+**Expected answer.** Housing: 3,640 listings in Lisbon proper are open for the whole 182 nights from Jan 1, 2027 (5,078 in the metro area). The median 6-month total is $28,012 and the cheapest 10% are under $13,264, at snapshot nightly rates, so monthly discounts would lower these. The central options are Santa Maria Maior (875 stays, median $32,655, 268 Mbps) and Arroios (480, $23,267, 286 Mbps). January averages 59 / 48 °F (15.2 / 9.0 °C). **Coworking:** live Google Maps results near those neighbourhoods (17–20 spaces each at the time of the run). **Visas are not in any of the data**, so "can I legally stay 6 months?" must be declined, not answered.
 
 Sources: `listings` + `availability`, `speed_tiles`, `climate`, Google Places API (live); visas: none.
 
-| NomadReady (64 s, 8 tool calls) | Same model, no tools |
+| NomadReady (68 s, 7 tool calls) | Same model, no tools |
 |---|---|
-| "3,640 listings", median $28,012, 10th percentile $13,264; Santa Maria Maior 875 · $32,655 · 268 Mbps and Arroios 480 · $23,267 · 286 Mbps, each with 17–19 coworking spaces nearby from Google Maps. These match the expected values. Under "What this data can't tell you": **"The data does not cover visa rules (such as Schengen zone restrictions for a 182-night stay)."** It assumed no budget and no work hours, and says so at the top. | "**Yes, you can absolutely stay in Lisbon for 6 months**", then visa advice from memory (90/180 rule, D8 digital-nomad visa, "€3,280/month" income requirement) with no source or date. Coworking "is world-class". No availability or price for these dates. |
+| "3,640 available listings", median $28,012, 10th percentile $13,264. Arroios 480 · $23,267 · 286 Mbps, Santa Maria Maior 875 · $32,655 · 268 Mbps and Misericórdia 558 · $33,030 · 256 Mbps, with 19, 17 and 18 coworking spaces nearby from Google Maps. These match the expected values. Under "What this data can't tell you": **"Local visa requirements… cannot be definitively evaluated from the database facts"**, along with coworking prices and desk availability. January highs 59°F, lows 48°F. It assumed no budget and no work hours, and says so at the top. | "The short answer is **yes, absolutely**", then visa advice from memory (90/180 rule, D8 digital-nomad visa) with no source or date. Coworking is "one of the best… in the world". No availability or price for these dates. |
 
 ### Vague question → clarification
 
@@ -176,7 +176,7 @@ Sources: `listings` + `availability`, `speed_tiles`, `climate`, Google Places AP
 
 NomadReady (3 s, no tools): *"To compare cities for you I need a bit more: roughly when you're going (dates, a month, or a season); roughly how long you'll stay (e.g. 2 weeks, a month, 3 months); a budget for the stay in US dollars; the hours you need to be online and your home time zone (or say they're flexible)…"*
 
-Follow-up in the same session: *"A month starting in February, about $1,800 total, online 9-5 Eastern, and I need a desk."* No cities were named, so the Lead picked four warm candidates and researched them in parallel: **Santiago, Buenos Aires, Mexico City and Rio de Janeiro** (88 s, 32 tool calls). Santiago ranked first: median $1,716 for 28 nights citywide, and the central Santiago commune alone has 1,915 stays within budget on blocks measuring 479 Mbps.
+Follow-up in the same session: *"A month starting in February, about $1,800 total, online 9-5 Eastern, and I need a desk."* No cities were named, so the Lead picked four warm candidates and researched them in parallel: **Santiago, Buenos Aires, Rio de Janeiro and Mexico City** (136 s, 23 tool calls). Santiago ranked first: 4,032 of 6,702 open stays within budget, median $1,590 for 28 nights, and the central Santiago commune alone has 2,185 stays within budget on blocks measuring 476 Mbps. Mexico City came last because "its February nights average a chilly 45°F".
 
 ## Running locally
 
@@ -186,7 +186,7 @@ gcloud auth application-default login       # Vertex AI (Gemini) credentials
 echo "GOOGLE_PLACES_API_KEY=..." > .env     # optional: without it, coworking is reported as unknown
 # build data/nomad.duckdb (see "How to load it"), then:
 uv run app.py                               # http://127.0.0.1:8000
-uv run pytest -m "not network"              # 84 offline tests
+uv run pytest -m "not network"              # 88 offline tests
 ```
 
 ## Deployment

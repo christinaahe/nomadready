@@ -12,7 +12,7 @@ from agents import Agent, Runner
 
 from scout.config import MODEL, REVISION_CUTOFF_S, SETTINGS, WRITER_DEADLINE_S
 from scout.state import Research
-from scout.summary import city_cards
+from scout.summary import city_cards, listing_examples
 from scout.verify import verify
 
 MIN_WRITE_S = 30  # the draft always gets at least this long
@@ -31,8 +31,12 @@ Structure:
    table of the recommended neighbourhoods:
    | Neighbourhood | Listings in budget | Median stay total | Median download (fixed) | Speed confidence |
    If budget_total_usd is null, call the second column "Listings available" instead. Add a "Coworking
-   nearby" column only if coworking was searched (coworking_nearby not null). Then 1-2 example listing
-   links. Round dollars and Mbps to whole numbers ($1,053, 201 Mbps).
+   nearby" column only if coworking was searched (coworking_nearby not null). Then, per neighbourhood,
+   its example listings from "Example listings" below: the affordable one, then the typical one (near
+   that neighbourhood's median), each as a link labelled with its room type and stay total, e.g.
+   "- Roma Norte: affordable [Private room, $612](url) [airbnb-mexico-city] · typical [Entire home, 1 BR,
+   $1,061](url) [airbnb-mexico-city]". bedrooms 0 means a studio. Round dollars and Mbps to whole numbers ($1,053, 201 Mbps).
+   Temperatures in °F, rounded to whole degrees (highs around 62°F).
 4. "## What this data can't tell you": the parts of the request outside the data (from the lead's
    notes and the brief's other_questions / uncovered_cities), plus, always: prices are the September
    snapshot's nightly rate x nights, not live quotes, and don't include weekly/monthly discounts;
@@ -83,12 +87,18 @@ def _writer_input(state: Research, lead_notes: str) -> str:
         exact = [{k: v for k, v in card.items() if k != "climate"} for card in city_cards(state)]
     except Exception:
         exact = []
+    try:
+        examples = listing_examples(state)
+    except Exception:
+        examples = {}
     return (f"Trip brief:\n{json.dumps(state.brief, indent=1)}\n\n"
             f"Lead's notes:\n{lead_notes}\n\n"
             f"Researchers' findings (follow-ups are '#2', '#3'):\n{json.dumps(findings, indent=1, default=str)}\n\n"
             "Exact city-level numbers from the tool results (shown to the reader as headline figures; use "
             "these for each city's cost, counts, speed range, work hours and advisory, with their `cites`):\n"
             f"{json.dumps(exact, indent=1, default=str)}\n\n"
+            "Example listings (url -> details from the tool results; label the links with these):\n"
+            f"{json.dumps(examples, indent=1, default=str)}\n\n"
             f"Citation ids you may use:\n{citation_list}")
 
 
