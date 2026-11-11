@@ -104,6 +104,111 @@ def test_custom_queries_are_capped_per_researcher():
     assert "rows" in call("Researcher-Lisbon")  # another researcher has its own allowance
 
 
+# --- regional fallback: a 429 on Vertex's `global` endpoint is retried on `us` ---
+
+
+def test_rate_limited_call_moves_to_the_fallback_location(monkeypatch):
+    import asyncio
+
+    import litellm
+    from agents import ModelSettings
+    from agents.extensions.models.litellm_model import LitellmModel
+
+    from scout.config import FALLBACK_LOCATION, MODEL, SETTINGS
+    seen = []
+
+    async def fake_get_response(self, system_instructions, input, model_settings, *args, **kwargs):
+        loc = model_settings.extra_args["vertex_location"]
+        seen.append(loc)
+        if loc == "global":
+            raise litellm.RateLimitError(message="Resource exhausted", llm_provider="vertex_ai", model="gemini")
+        return f"answered on {loc}"
+    monkeypatch.setattr(LitellmModel, "get_response", fake_get_response)
+    out = asyncio.run(MODEL.get_response(None, "hi", SETTINGS, [], None, [], None))
+    assert out == f"answered on {FALLBACK_LOCATION}" and seen == ["global", FALLBACK_LOCATION]
+    # Other errors (a bad request, say) aren't retried elsewhere
+    seen.clear()
+
+    async def bad_request(self, system_instructions, input, model_settings, *args, **kwargs):
+        seen.append(model_settings.extra_args["vertex_location"])
+        raise litellm.BadRequestError(message="bad", llm_provider="vertex_ai", model="gemini")
+    monkeypatch.setattr(LitellmModel, "get_response", bad_request)
+    with pytest.raises(litellm.BadRequestError):
+        asyncio.run(MODEL.get_response(None, "hi", ModelSettings(extra_args={"vertex_location": "global"}), [], None, [], None))
+    assert seen == ["global"]
+
+
+# --- wall-clock limits: a stalled model call degrades the answer instead of hanging it ---
+
+
+def _findings(city):
+    from scout.researcher import CityFindings
+    return CityFindings(city=city, fit="good", summary=f"{city} summary.", n_available=1, n_within_budget=1,
+                        median_total_usd=1, work_hours_local=None, hours_outside_8am_10pm=None, weather=None,
+                        advisory_level=None, advisory_url=None, neighbourhoods=[], facts=[], gaps=["x"])
+
+
+def _stalls(seconds=5, before=None):
+    import asyncio
+
+    async def run(agent, input, context=None, **kw):
+        if before:
+            before(context)
+        await asyncio.sleep(seconds)
+    return run
+
+
+def test_stalled_researcher_becomes_a_gap(monkeypatch):
+    import asyncio
+
+    from agents.tool_context import ToolContext
+
+    import scout.lead as lead
+    monkeypatch.setattr(lead, "RESEARCHER_TIMEOUT_S", 0.2)
+    monkeypatch.setattr(lead.Runner, "run", _stalls())
+    s = Research(hooks=RecordingHooks())
+    s.brief = {"cities": ["Porto"]}
+    args = json.dumps({"city": "Porto", "task": "Full first look."})
+    out = json.loads(asyncio.run(lead.research_city.on_invoke_tool(
+        ToolContext(context=s, tool_name="research_city", tool_call_id="t", tool_arguments=args), args)))
+    assert "timed out" in out["error"] and not s.findings
+
+
+def test_research_phase_limit_still_writes_from_what_finished(monkeypatch):
+    import asyncio
+
+    import scout.pipeline as pipeline
+    brief = {"cities": ["Lisbon", "Porto"]}
+
+    async def fake_intake(conversation, state, hooks):
+        return brief, None
+    notes = {}
+
+    async def fake_write(state, lead_notes):
+        notes["lead"] = lead_notes
+        return "report"
+    monkeypatch.setattr(pipeline, "intake", fake_intake)
+    monkeypatch.setattr(pipeline, "write_report", fake_write)
+    monkeypatch.setattr(pipeline, "RESEARCH_PHASE_TIMEOUT_S", 0.2)
+    monkeypatch.setattr(pipeline.Runner, "run", _stalls(before=lambda st: st.findings.update({"Researcher-Lisbon": _findings("Lisbon")})))
+    response, _ = asyncio.run(pipeline.answer([{"role": "user", "content": "x"}]))
+    assert response == "report" and "Not researched in time: Porto" in notes["lead"]
+
+
+def test_stalled_writer_sends_the_findings_instead(monkeypatch):
+    import asyncio
+
+    import scout.writer as writer
+    monkeypatch.setattr(writer, "MIN_WRITE_S", 0.2)
+    monkeypatch.setattr(writer, "WRITER_DEADLINE_S", 0)
+    monkeypatch.setattr(writer.Runner, "run", _stalls())
+    s = Research(hooks=RecordingHooks())
+    s.brief = {"cities": ["Lisbon"]}
+    s.findings["Researcher-Lisbon"] = _findings("Lisbon")
+    report = asyncio.run(writer.write_report(s, "notes"))
+    assert "took too long" in report and "Lisbon summary." in report
+
+
 def test_a_broken_listener_does_not_break_the_run():
     def bad(event):
         raise ValueError("listener gone")

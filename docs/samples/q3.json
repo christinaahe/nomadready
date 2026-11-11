@@ -1,0 +1,88 @@
+{
+ "id": "q3",
+ "title": "Partially answerable",
+ "question": "Can I stay in Lisbon for 6 months starting in January, and is the coworking scene good?",
+ "sources": "listings + availability; climate; Google Places API (live); visas: not in any source",
+ "expected": {
+  "metro_area": {
+   "n_available": 5078,
+   "n_within_budget": 5078,
+   "median_total_usd": 26336.0,
+   "p10_total_usd": 12116.0,
+   "top_neighbourhoods": [
+    {
+     "neighbourhood": "Santa Maria Maior",
+     "n_listings": 875,
+     "median_total_usd": 32655.0,
+     "median_down_mbps_fixed": 268.0,
+     "share_low_confidence": 0.0
+    },
+    {
+     "neighbourhood": "Misericórdia",
+     "n_listings": 558,
+     "median_total_usd": 33030.0,
+     "median_down_mbps_fixed": 256.0,
+     "share_low_confidence": 0.02
+    },
+    {
+     "neighbourhood": "Arroios",
+     "n_listings": 480,
+     "median_total_usd": 23267.0,
+     "median_down_mbps_fixed": 286.0,
+     "share_low_confidence": 0.0
+    }
+   ]
+  },
+  "city_proper_lisboa": {
+   "n_available": 3640,
+   "n_within_budget": 3640,
+   "median_total_usd": 28012.0,
+   "p10_total_usd": 13264.0,
+   "top_neighbourhoods": [
+    {
+     "neighbourhood": "Santa Maria Maior",
+     "n_listings": 875,
+     "median_total_usd": 32655.0,
+     "median_down_mbps_fixed": 268.0,
+     "share_low_confidence": 0.0
+    },
+    {
+     "neighbourhood": "Misericórdia",
+     "n_listings": 558,
+     "median_total_usd": 33030.0,
+     "median_down_mbps_fixed": 256.0,
+     "share_low_confidence": 0.02
+    },
+    {
+     "neighbourhood": "Arroios",
+     "n_listings": 480,
+     "median_total_usd": 23267.0,
+     "median_down_mbps_fixed": 286.0,
+     "share_low_confidence": 0.0
+    }
+   ]
+  },
+  "jan_high_c": 15.2,
+  "jan_low_c": 9.0,
+  "coworking": "Live from Google Maps at answer time (not stored, per Google's terms).",
+  "not_in_data": [
+   "visa rules / how long a US citizen can stay",
+   "coworking prices, desk availability, community"
+  ]
+ },
+ "agent": [
+  {
+   "user": "Can I stay in Lisbon for 6 months starting in January, and is the coworking scene good?",
+   "response": "Assumed: no budget given: not filtering by price, no work hours given: work-hours overlap not checked\n\n## Bottom line\nLisbon is the only city requested for this 182-night stay [airbnb-lisbon] and is highly recommended due to its exceptional accommodation availability of 3,640 listings [airbnb-lisbon]. The city features super-fast fixed internet with median download speeds ranging from 268 to 286 Mbps [ookla-fixed-2026-Q3] and a highly-rated, robust coworking scene [google-places-lisbon-arroios, google-places-lisbon-santa-maria-maior]. It offers safe, comfortable winter living conditions with mild weather [open-meteo-lisbon-01] and a Level 1 travel advisory [state-dept-pt].\n\n## Lisbon: Outstanding fit with massive listing availability, fast internet, and an active coworking scene\n* **Estimated cost**: For the 182-night stay [airbnb-lisbon], the median stay cost is $28,012 [airbnb-lisbon] and the 10th-percentile stay cost is $13,264 [airbnb-lisbon]. \n* **Work hours**: Work-hours overlap could not be verified because no home time zone or work hours were specified.\n* **Typical weather**: January features mild winter temperatures with an average of 9.8 daylight hours [open-meteo-lisbon-01], 7.5 average sunshine hours per day [open-meteo-lisbon-01], and monthly precipitation averaging 78 mm [open-meteo-lisbon-01].\n* **Travel advisory level**: [Level 1: Exercise Normal Precautions](https://travel.state.gov/content/tsg_aem/us/en/home/international-travel/travel-advisories/destination.prt.html) [state-dept-pt].\n\n### Recommended Neighbourhoods\n\n| Neighbourhood | Listings available | Median stay total | Median download (fixed) | Speed confidence | Coworking nearby |\n| :--- | :--- | :--- | :--- | :--- | :--- |\n| **Santa Maria Maior** | 875 [airbnb-lisbon] | $32,655 [airbnb-lisbon, fx-EUR] | 268 Mbps [ookla-fixed-2026-Q3] | High | 17 [google-places-lisbon-santa-maria-maior] |\n| **Arroios** | 480 [airbnb-lisbon] | $23,267 [airbnb-lisbon, fx-EUR] | 286 Mbps [ookla-fixed-2026-Q3] | High | 19 [google-places-lisbon-arroios] |\n\nIn Santa Maria Maior, popular listings include this [central apartment](https://www.airbnb.com/rooms/1299369813986976644) and this [historic stay](https://www.airbnb.com/rooms/8072121) [airbnb-lisbon]. \nIn Arroios, you can consider this [local apartment](https://www.airbnb.com/rooms/724360434231499460) or this [modern unit](https://www.airbnb.com/rooms/1376246083419881182) [airbnb-lisbon].\n\n### Coworking Scene\nThe coworking scene in Lisbon is highly active and well-developed. \n* In **Santa Maria Maior**, prominent hubs include [a coworking space], which has [rating omitted] [google-places-lisbon-santa-maria-maior], and [a coworking space], [rating omitted] [google-places-lisbon-santa-maria-maior]. The neighbourhood has a median upload speed of 172 Mbps [ookla-fixed-2026-Q3].\n* In **Arroios**, you can utilize [a coworking space], which is highly rated at [rating omitted] [google-places-lisbon-arroios]. The neighbourhood has a median upload speed of 207 Mbps [ookla-fixed-2026-Q3].\n\n## What this data can't tell you\n* **Work Shift & Budget Compatibility**: Because no home time zone, work hours, or budget limit were provided in the brief, this data cannot verify your work-hours overlap or filter accommodations by price.\n* **Visas, Nightlife, & Local Safety**: The data does not cover visa rules (such as Schengen zone restrictions for a 182-night stay), nightlife scenes, or neighborhood-specific safety ratings (beyond Portugal's overall Level 1 travel advisory [state-dept-pt]).\n* **Disclaimer**: Accommodation prices are based on a September snapshot's nightly rate multiplied by 182 nights, not live quotes, and do not include weekly or monthly discounts; availability may have changed since the snapshot; internet speeds are measured around the listing, not the unit's actual Wi-Fi.\n\n## Sources\n- **[airbnb-lisbon]** Inside Airbnb: Lisbon, snapshot 2026-09-19, listings + availability <https://insideairbnb.com/get-the-data/>\n- **[ookla-fixed-2026-Q3]** Speedtest® by Ookla® Global Fixed and Mobile Network Performance Maps: fixed tiles, 2026-Q3, zoom-16 (~600 m) tiles joined to listings by quadkey <https://github.com/teamookla/ookla-open-data>\n- **[google-places-lisbon-arroios]** Google Maps (Places API): text search 'coworking space' near Arroios, retrieved 2026-11-11 <https://maps.google.com>\n- **[google-places-lisbon-santa-maria-maior]** Google Maps (Places API): text search 'coworking space' near Santa Maria Maior, retrieved 2026-11-11 <https://maps.google.com>\n- **[open-meteo-lisbon-01]** Open-Meteo Historical Weather API (ERA5 reanalysis), CC BY 4.0: Lisbon, January 2021-2025, lat 38.718, lon -9.148, retrieved 2026-11-10 <https://open-meteo.com>\n- **[state-dept-pt]** U.S. Department of State travel advisories: Portugal - Level 1: Exercise Normal Precautions (updated 2025-12-22) <https://travel.state.gov/content/tsg_aem/us/en/home/international-travel/travel-advisories/destination.prt.html>\n- **[fx-EUR]** Frankfurter (ECB reference rates): 1 EUR = 1.1214 USD, as of 2026-11-10",
+   "seconds": 64,
+   "clarifying": false,
+   "n_tool_calls": 8,
+   "agents": [
+    "Lead",
+    "Researcher-Lisbon",
+    "Writer"
+   ]
+  }
+ ],
+ "baseline": "The short answer is **yes, you can absolutely stay in Lisbon for 6 months**, and **the coworking and digital nomad scene is one of the best in the world.** \n\nHowever, how you do this legally depends entirely on your passport, and starting in January comes with a few specific weather and housing caveats. \n\nHere is a complete breakdown of how to make a 6-month stay in Lisbon starting in January work for you.\n\n---\n\n### Part 1: Can you stay for 6 months? (The Legalities)\n\nYour ability to stay for 6 months depends on your citizenship:\n\n#### 1. If you hold an EU/EEA/Swiss Passport:\n*   **Yes, easily.** You have the right to free movement. If you stay longer than 3 months, you are technically required to register for a *Certificado de Registo* at the local town hall (Câmara Municipal), which is a simple and cheap process.\n\n#### 2. If you hold a Non-EU Passport (US, UK, Canada, Australia, etc.):\n*   **The 90-Day Rule:** You can only stay in the Schengen Area (which includes Portugal) for **90 days out of any 180-day period** visa-free. You *cannot* just stay for 6 months on a tourist stamp.\n*   **The Solution: The Digital Nomad Visa (D8 Visa - Temporary Stay):**\n    *   Portugal offers a **Temporary Stay Digital Nomad Visa** specifically for stays of up to one year. \n    *   **Requirements:** You must prove you are employed or self-employed outside of Portugal and earn at least **4 times the Portuguese minimum wage** (currently around **€3,280/month**).\n    *   **Application:** You must apply for this visa at the Portuguese consulate in your home country *before* you arrive in January. It can take 2–3 months to process, so you should start applying in September or October.\n\n---\n\n### Part 2: Is the coworking & digital nomad scene good?\n\n**Yes, it is world-class.** Lisbon is consistently ranked as one of the top 3 digital nomad hubs in Europe (alongside Las Palmas and Budapest). \n\n#### The Community\nThe community is incredibly active, welcoming, and organized. \n*   **Lisbon Digital Nomads:** This is the main community. They host weekly meetups (usually every Thursday) that attract hundreds of people, as well as co-working days, hikes, and dinners.\n*   **Slack/Facebook Groups:** The \"Lisbon Digital Nomads\" Slack channel and various Facebook groups are incredibly active for finding housing, buying secondhand gear, and finding gym buddies.\n\n#### Top Coworking Spaces in Lisbon\n*   **Second Home (Cais do Sodré):** Located inside the historic Mercado da Ribeira (Time Out Market). It is famous for being filled with thousands of plants, having a high-end aesthetic, and hosting great cultural events.\n*   **LACS (Santos, Anjos, or Conde d’Óbidos):** A very creative, community-focused space with great rooftops and art vibes.\n*   **Outsite (Cais do Sodré):** A cafe/coworking/coliving hybrid designed specifically for international nomads.\n*   **Idea Spaces (Multiple locations):** A fantastic, highly professional local chain with spots in Palacio das Neves, Saldanha, and Cabo Ruivo. Excellent facilities and community events.\n*   **Café Culture:** If you prefer working from cafes, Lisbon has a booming specialty coffee scene. Places like *Copenhagen Coffee Lab*, *Comoba*, and *Seagull Method Cafe* are highly laptop-friendly (though some cafes restrict laptops on weekends).\n\n---\n\n### Part 3: What is Lisbon like starting in January?\n\nStarting your 6-month stay in January means you will experience the transition from winter to summer.\n\n#### The Weather & Vibe (January – March)\n*   **It’s not tropical:** January and February are Lisbon's coldest and wettest months. Daytime temperatures average 15°C (59°F), dropping to 8°C (46°F) at night.\n*   **The \"Cold Indoors\" Trap:** Portuguese apartments are notorious for having **no central heating or insulation**. January indoors can actually feel colder than outdoors. **Crucial Tip:** When booking an apartment, make sure it has *Ar Condicionado* (AC that heats) or that the host provides heaters.\n*   **The Upside:** The city is much less crowded with tourists, and housing is slightly easier to secure (and occasionally cheaper) than in the summer.\n\n#### The Weather & Vibe (April – June)\n*   **Spring is glorious:** By April, the famous purple Jacaranda trees start blooming, temperatures rise to the mid-20s°C (70s°F), and the beach season begins. \n*   **June Festivities:** Your stay will peak in June during the *Santos Populares* (especially the night of June 12th), where the entire city turns into a massive, grilled-sardine-scented street party. It is an unforgettable experience.\n\n---\n\n### Summary Checklist for a January Move:\n1.  **Visa:** If non-EU, start your **D8 Temporary Stay Visa** application by September/October.\n2.  **Housing:** Book early. Look for neighborhoods like **Santos, Estrela, Príncipe Real, or Arroios** (great for transit and nomad life). *Ensure the apartment has heating.*\n3.  **Community:** Join the Lisbon Digital Nomads Slack group before you arrive to start networking and looking for flatmates."
+}

@@ -1,13 +1,14 @@
 """Lead, phase 2: fan out one City Researcher per city in parallel, check the findings for gaps,
 and send targeted follow-ups, within the caps in config.py."""
 
+import asyncio
 import json
 
 from agents import Agent, ModelSettings, RunContextWrapper, Runner, function_tool
 from agents.run_error_handlers import RunErrorHandlerInput
 
 from scout.config import (MAX_RESEARCHERS, MAX_ROUNDS, MODEL, RESEARCH_DEADLINE_S, RESEARCHER_MAX_TURNS,
-                          SETTINGS)
+                          RESEARCHER_TIMEOUT_S, SETTINGS)
 from scout.researcher import researcher, work_overlap
 from scout.state import Research
 from tools.db import city_info, fold, rows
@@ -62,9 +63,17 @@ async def research_city(ctx: RunContextWrapper[Research], city: str, task: str) 
         return r.final_output
 
     try:
-        result = await Runner.run(agent, prompt, context=state, hooks=ctx.context.hooks,
-                                  max_turns=RESEARCHER_MAX_TURNS, error_handlers={"max_turns": wrap_up})
+        result = await asyncio.wait_for(
+            Runner.run(agent, prompt, context=state, hooks=ctx.context.hooks,
+                       max_turns=RESEARCHER_MAX_TURNS, error_handlers={"max_turns": wrap_up}),
+            timeout=RESEARCHER_TIMEOUT_S)
+    except TimeoutError:
+        state.hooks.send({"type": "agent", "agent": agent_name, "status": "finished"})
+        return json.dumps({"city": name, "error": f"Researcher timed out after {RESEARCHER_TIMEOUT_S} s "
+                                                  "(a model call stalled). Treat this city as not researched."})
     except Exception as e:  # a researcher that fails is a gap, not a crashed answer
+        # The SDK only reports an agent's end when it succeeds; close it for the page's timeline
+        state.hooks.send({"type": "agent", "agent": agent_name, "status": "finished"})
         return json.dumps({"city": name, "error": f"Researcher failed: {type(e).__name__}: {str(e)[:300]}"})
     findings = reconcile(result.final_output, state, agent_name)
     if wrapped_up:

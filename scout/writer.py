@@ -4,14 +4,18 @@ Citations are checked in code: every [id] in the report must be an id some tool 
 Sources list is built from those tool citations, not written by the model.
 """
 
+import asyncio
 import json
 import re
 
 from agents import Agent, Runner
 
-from scout.config import MODEL, SETTINGS
+from scout.config import MODEL, REVISION_CUTOFF_S, SETTINGS, WRITER_DEADLINE_S
 from scout.state import Research
+from scout.summary import city_cards
 from scout.verify import verify
+
+MIN_WRITE_S = 30  # the draft always gets at least this long
 
 writer = Agent(
     name="Writer",
@@ -73,22 +77,50 @@ def sources_section(ids: list[str], citations: dict[str, dict]) -> str:
 def _writer_input(state: Research, lead_notes: str) -> str:
     findings = {name: f.model_dump() if hasattr(f, "model_dump") else f for name, f in state.findings.items()}
     citation_list = "\n".join(f"- {cid}: {c['source']} ({c['detail']})" for cid, c in state.citations.items())
+    # City-level numbers read straight from the tool results: the page shows these as stat tiles, so
+    # the prose must use the same ones (a researcher may have dropped or retyped them)
+    try:
+        exact = [{k: v for k, v in card.items() if k != "climate"} for card in city_cards(state)]
+    except Exception:
+        exact = []
     return (f"Trip brief:\n{json.dumps(state.brief, indent=1)}\n\n"
             f"Lead's notes:\n{lead_notes}\n\n"
             f"Researchers' findings (follow-ups are '#2', '#3'):\n{json.dumps(findings, indent=1, default=str)}\n\n"
+            "Exact city-level numbers from the tool results (shown to the reader as headline figures; use "
+            "these for each city's cost, counts, speed range, work hours and advisory, with their `cites`):\n"
+            f"{json.dumps(exact, indent=1, default=str)}\n\n"
             f"Citation ids you may use:\n{citation_list}")
+
+
+def _plain_summary(state: Research) -> str:
+    """If the Writer can't finish in time: each researcher's own summary and gaps, unpolished."""
+    parts = ["The full report took too long to write, so here are the researchers' findings as they "
+             "returned them (numbers are from the data tools; see the tool calls for details)."]
+    for name, f in state.findings.items():
+        parts.append(f"\n## {f.city}: {f.fit} fit\n\n{f.summary}")
+        if f.gaps:
+            parts.append("\nGaps: " + "; ".join(f.gaps))
+    return "\n".join(parts)
 
 
 async def write_report(state: Research, lead_notes: str) -> str:
     hooks = state.hooks
     prompt = _writer_input(state, lead_notes)
     hooks.phase("writing", f"Writing the report from {len(state.findings)} researchers' findings")
-    result = await Runner.run(writer, prompt, context=state, hooks=hooks, max_turns=1)
+    try:
+        result = await asyncio.wait_for(Runner.run(writer, prompt, context=state, hooks=hooks, max_turns=1),
+                                        timeout=max(WRITER_DEADLINE_S - state.elapsed(), MIN_WRITE_S))
+    except TimeoutError:
+        hooks.send({"type": "agent", "agent": "Writer", "status": "finished"})
+        return _plain_summary(state)
     report = str(result.final_output)
 
-    # One revision, if the Verifier finds wrong or unsupported numbers or the draft cites unknown ids
-    hooks.phase("checking", "Fact-checking every number against the tool results")
-    checks = await verify(report, state)
+    # One revision, if the Verifier finds wrong or unsupported numbers or the draft cites unknown ids.
+    # Late in the run there's no time for a model check and a rewrite: keep the code-only checks.
+    late = state.elapsed() > REVISION_CUTOFF_S
+    hooks.phase("checking", "Checking citations (out of time for the full fact-check)" if late
+                else "Fact-checking every number against the tool results")
+    checks = [] if late else await verify(report, state)
     problems = [f"- \"{c.sentence}\": {c.verdict}. {c.explanation}"
                 + (f" Use instead: \"{c.correction}\"" if c.correction else " Remove it.")
                 for c in checks]
@@ -98,12 +130,16 @@ async def write_report(state: Research, lead_notes: str) -> str:
     hooks.send({"type": "checked", "problems": [{"sentence": c.sentence, "verdict": c.verdict,
                                                  "explanation": c.explanation} for c in checks],
                 "unknown_citations": unknown})
-    if problems:
+    if problems and not late:
         hooks.phase("revising", f"Fixing {len(problems)} problem(s) the fact-check found")
         fix = (f"{prompt}\n\nYour draft:\n{report}\n\nA fact-check against the raw data found:\n"
                + "\n".join(problems) + "\n\nReturn the full corrected report, changing only what's needed.")
-        result = await Runner.run(writer, fix, context=state, hooks=hooks, max_turns=1)
-        report = str(result.final_output)
+        try:
+            result = await asyncio.wait_for(Runner.run(writer, fix, context=state, hooks=hooks, max_turns=1),
+                                            timeout=max(WRITER_DEADLINE_S - state.elapsed(), MIN_WRITE_S))
+            report = str(result.final_output)
+        except TimeoutError:  # keep the draft; unknown citations are still marked below
+            hooks.send({"type": "agent", "agent": "Writer", "status": "finished"})
     for cid in cited_ids(report):
         if cid not in state.citations:  # still unknown: mark it rather than pass it off as a source
             report = report.replace(f"[{cid}]", "[unverified]")

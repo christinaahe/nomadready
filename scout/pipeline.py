@@ -1,12 +1,13 @@
 """One question, start to finish: intake (clarify or brief) -> Lead fan-out and gap loop -> Writer."""
 
+import asyncio
 import json
 from typing import Callable
 
 from agents import Runner
 from agents.exceptions import MaxTurnsExceeded
 
-from scout.config import LEAD_MAX_TURNS
+from scout.config import LEAD_MAX_TURNS, RESEARCH_PHASE_TIMEOUT_S
 from scout.intake import intake
 from scout.lead import lead
 from scout.state import RecordingHooks, Research
@@ -31,11 +32,19 @@ async def answer(conversation: list[dict], emit: Callable[[dict], None] | None =
     hooks.phase("research", f"Researching {', '.join(brief['cities'])}" if brief["cities"]
                 else "Picking cities to compare")
     try:
-        result = await Runner.run(lead, f"Trip brief:\n{json.dumps(brief, indent=1)}", context=state,
-                                  hooks=hooks, max_turns=LEAD_MAX_TURNS)
+        result = await asyncio.wait_for(
+            Runner.run(lead, f"Trip brief:\n{json.dumps(brief, indent=1)}", context=state,
+                       hooks=hooks, max_turns=LEAD_MAX_TURNS),
+            timeout=RESEARCH_PHASE_TIMEOUT_S)
         lead_notes = str(result.final_output)
     except MaxTurnsExceeded:
         lead_notes = "(The lead ran out of turns; rank from the findings.)"
+    except TimeoutError:
+        # Researchers still running are cancelled; what finished is in state.findings
+        missing = [c for c in brief["cities"] if not any(f.city == c for f in state.findings.values())]
+        lead_notes = (f"(Research stopped at the {RESEARCH_PHASE_TIMEOUT_S} s time limit. Rank from the findings. "
+                      + (f"Not researched in time: {', '.join(missing)}; say so plainly.)" if missing else ")"))
+        hooks.send({"type": "agent", "agent": "Lead", "status": "finished"})
     if not state.findings:
         return ("I couldn't complete the research for this question (no researcher returned findings). "
                 "Please try again in a moment."), state

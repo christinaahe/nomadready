@@ -183,6 +183,44 @@ def test_reconcile_keeps_a_number_from_another_of_the_researchers_calls():
     assert nb.n_within_budget == 1 and nb.median_total_usd == 680.0 and not s.corrections
 
 
+# --- the page's city cards: numbers come from tool results, not retyped findings ---
+
+
+def test_city_cards_use_the_matching_city_wide_call():
+    from scout.summary import city_cards
+
+    s = Research()
+    s.brief = {"budget_total_usd": 2500, "room_type": "Entire home/apt", "needs_workspace": True}
+    cite = lambda i: [{"id": i, "source": "x", "detail": "y"}]  # noqa: E731
+
+    def call(name, args, result):
+        s.tool_calls.append({"agent": "Researcher-Lisbon", "name": name, "args": args, "result": json.dumps(result)})
+
+    full = {"city": "Lisbon", "max_total_usd": 2500, "room_type": "Entire home/apt", "needs_workspace": True}
+    call("find_stays", full, {"n_available": 900, "n_within_budget": 120, "median_total_usd": 3100, "p10_total_usd": 1500,
+                              "stay": {"nights": 28}, "citations": cite("airbnb-lisbon") + cite("ookla-fixed-2026-Q3")})
+    call("find_stays", {**full, "neighbourhood": "Arroios"}, {"n_available": 50, "n_within_budget": 9})   # narrower
+    call("find_stays", {"city": "Lisbon"}, {"n_available": 8000, "median_total_usd": 2900})               # unfiltered
+    call("work_overlap", {"city": "Lisbon"}, {"work_hours_local": "14:00-22:00", "hours_outside_8am_10pm_local": 0,
+                                              "citations": cite("iana-tz")})
+    call("travel_advisory", {"city": "Lisbon"}, {"level": 1, "link": "https://t", "citations": cite("state-dept-pt")})
+    nb = lambda name, mbps: NeighbourhoodFinding(  # noqa: E731
+        name=name, n_within_budget=1, median_total_usd=1, median_down_mbps_fixed=mbps, low_confidence_speed=False,
+        coworking_nearby=None, why="", example_listing_urls=[], cites=[])
+    s.findings["Researcher-Lisbon"] = CityFindings(
+        city="Lisbon", fit="tight", summary="", n_available=1, n_within_budget=1, median_total_usd=1,
+        work_hours_local=None, hours_outside_8am_10pm=None, weather=None, advisory_level=None, advisory_url=None,
+        neighbourhoods=[nb("Arroios", 286.0), nb("Estrela", 336.0)], facts=[], gaps=[])
+
+    [card] = city_cards(s)
+    assert card["fit"] == "tight"
+    assert card["stays"]["n_within_budget"] == 120 and card["stays"]["median_total_usd"] == 3100
+    assert card["stays"]["cites"] == ["airbnb-lisbon"] and card["speed"]["cites"] == ["ookla-fixed-2026-Q3"]
+    assert (card["speed"]["min"], card["speed"]["max"]) == (286.0, 336.0)
+    assert card["hours"]["local"] == "14:00-22:00" and card["advisory"]["level"] == 1
+    assert len(card["climate"]["months"]) == 12
+
+
 # --- hooks: /chat's tool_calls ---
 
 

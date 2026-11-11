@@ -1,0 +1,130 @@
+{
+ "id": "q1",
+ "title": "Full comparison",
+ "question": "A month in February, $2,500/month for a 1BR with a dedicated workspace, online 9am–5pm Eastern. Compare Lisbon, Mexico City, and Buenos Aires.",
+ "sources": "listings + availability (Inside Airbnb) ⨝ speed_tiles (Ookla) on quadkey; climate (Open-Meteo); State Dept advisories API; fx_rates; IANA time zones",
+ "expected": {
+  "Lisbon": {
+   "n_available": 3204,
+   "n_within_budget": 113,
+   "median_total_usd": 4998.0,
+   "p10_total_usd": 3111.0,
+   "top_neighbourhoods": [
+    {
+     "neighbourhood": "Parque das Nações",
+     "n_listings": 10,
+     "median_total_usd": 2057.0,
+     "median_down_mbps_fixed": 406.0,
+     "share_low_confidence": 0.0
+    },
+    {
+     "neighbourhood": "São Domingos de Rana",
+     "n_listings": 10,
+     "median_total_usd": 2285.0,
+     "median_down_mbps_fixed": 349.0,
+     "share_low_confidence": 0.0
+    },
+    {
+     "neighbourhood": "S.Maria, S.Miguel, S.Martinho, S.Pedro Penaferrim",
+     "n_listings": 6,
+     "median_total_usd": 2310.0,
+     "median_down_mbps_fixed": 138.0,
+     "share_low_confidence": 0.17
+    }
+   ],
+   "work_hours_local": "14:00-22:00",
+   "hours_outside_8am_10pm": 0.0,
+   "feb_high_c": 16.6,
+   "feb_low_c": 9.8,
+   "feb_rainy_days": 8.6,
+   "advisory_level": 1
+  },
+  "Mexico City": {
+   "n_available": 7251,
+   "n_within_budget": 3328,
+   "median_total_usd": 2635.0,
+   "p10_total_usd": 1454.0,
+   "top_neighbourhoods": [
+    {
+     "neighbourhood": "Cuauhtémoc",
+     "n_listings": 1493,
+     "median_total_usd": 2007.0,
+     "median_down_mbps_fixed": 196.0,
+     "share_low_confidence": 0.0
+    },
+    {
+     "neighbourhood": "Miguel Hidalgo",
+     "n_listings": 426,
+     "median_total_usd": 2088.0,
+     "median_down_mbps_fixed": 216.0,
+     "share_low_confidence": 0.0
+    },
+    {
+     "neighbourhood": "Benito Juárez",
+     "n_listings": 410,
+     "median_total_usd": 1867.0,
+     "median_down_mbps_fixed": 214.0,
+     "share_low_confidence": 0.0
+    }
+   ],
+   "work_hours_local": "08:00-16:00",
+   "hours_outside_8am_10pm": 0.0,
+   "feb_high_c": 24.5,
+   "feb_low_c": 7.2,
+   "feb_rainy_days": 2.0,
+   "advisory_level": 2
+  },
+  "Buenos Aires": {
+   "n_available": 7439,
+   "n_within_budget": 4779,
+   "median_total_usd": 2124.0,
+   "p10_total_usd": 1298.0,
+   "top_neighbourhoods": [
+    {
+     "neighbourhood": "Palermo",
+     "n_listings": 1398,
+     "median_total_usd": 1882.0,
+     "median_down_mbps_fixed": 271.0,
+     "share_low_confidence": 0.0
+    },
+    {
+     "neighbourhood": "Recoleta",
+     "n_listings": 658,
+     "median_total_usd": 1881.0,
+     "median_down_mbps_fixed": 259.0,
+     "share_low_confidence": 0.0
+    },
+    {
+     "neighbourhood": "San Nicolas",
+     "n_listings": 466,
+     "median_total_usd": 1638.0,
+     "median_down_mbps_fixed": 211.0,
+     "share_low_confidence": 0.0
+    }
+   ],
+   "work_hours_local": "11:00-19:00",
+   "hours_outside_8am_10pm": 0.0,
+   "feb_high_c": 27.9,
+   "feb_low_c": 20.1,
+   "feb_rainy_days": 7.8,
+   "advisory_level": 1
+  }
+ },
+ "agent": [
+  {
+   "user": "A month in February, $2,500/month for a 1BR with a dedicated workspace, online 9am–5pm Eastern. Compare Lisbon, Mexico City, and Buenos Aires.",
+   "response": "**Bottom line**: Buenos Aires is the top recommendation because it offers an exceptional fit with 4,779 [airbnb-buenos-aires] listings under budget, perfect working hours overlap [iana-tz], and blazing-fast internet [ookla-fixed-2026-Q3]. Mexico City is ranked second, providing a great selection of 3,328 [airbnb-mexico-city] budget-friendly listings with convenient work hours [iana-tz] and high-speed internet [ookla-fixed-2026-Q3]. Lisbon is ranked third and represents a very tight fit because only 46 [airbnb-lisbon] listings fall under the monthly budget, resulting in highly limited accommodation options.\n\n## Buenos Aires: Excellent fit with abundant budget listings, fast internet, and perfect working hours overlap\n\n*   **Estimated cost**: The median total cost for a 28 [airbnb-buenos-aires]-night stay is $2,124 [airbnb-buenos-aires], with a 10th-percentile total price of $1,298 [airbnb-buenos-aires, fx-ARS]. Out of 7,439 [airbnb-buenos-aires] available listings, 4,779 [airbnb-buenos-aires] are within the budget.\n*   **Work hours**: Local work hours are 11:00 to 19:00 [iana-tz], perfectly aligning with Eastern time with 0 [iana-tz] hours required outside the 08:00 to 22:00 window.\n*   **Typical weather**: February weather averages a high of 28°C [open-meteo-buenos-aires-02] and a low of 20°C [open-meteo-buenos-aires-02], with 8 [open-meteo-buenos-aires-02] rainy days (totalling 100 mm [open-meteo-buenos-aires-02] of precipitation), 11 [open-meteo-buenos-aires-02] hours of daily sunshine, and 13 [open-meteo-buenos-aires-02] daylight hours.\n*   **Travel advisory**: Level 1 [state-dept-ar] ([Travel Advisory](https://travel.state.gov/content/tsg_aem/us/en/home/international-travel/travel-advisories/destination.arg.html) [state-dept-ar]).\n\n| Neighbourhood | Listings in budget | Median stay total | Median download (fixed) | Speed confidence |\n| --- | --- | --- | --- | --- |\n| Palermo | 1,398 [airbnb-buenos-aires, fx-ARS] | $1,882 [airbnb-buenos-aires, fx-ARS] | 271 Mbps [ookla-fixed-2026-Q3] | High |\n| Recoleta | 658 [airbnb-buenos-aires, fx-ARS] | $1,881 [airbnb-buenos-aires, fx-ARS] | 259 Mbps [ookla-fixed-2026-Q3] | High |\n| San Nicolas | 466 [airbnb-buenos-aires, fx-ARS] | $1,638 [airbnb-buenos-aires, fx-ARS] | 211 Mbps [ookla-fixed-2026-Q3] | High |\n\nExample listings:\n*   Palermo: [Listing 1](https://www.airbnb.com/rooms/1049507256345106914) [airbnb-buenos-aires, fx-ARS], [Listing 2](https://www.airbnb.com/rooms/1068466239829441450) [airbnb-buenos-aires, fx-ARS]\n*   Recoleta: [Listing 1](https://www.airbnb.com/rooms/1497888314708570673) [airbnb-buenos-aires, fx-ARS], [Listing 2](https://www.airbnb.com/rooms/25253638) [airbnb-buenos-aires, fx-ARS]\n*   San Nicolas: [Listing 1](https://www.airbnb.com/rooms/1430656161963079289) [airbnb-buenos-aires, fx-ARS], [Listing 2](https://www.airbnb.com/rooms/1690803331822349262) [airbnb-buenos-aires, fx-ARS]\n\n## Mexico City: Great fit with a large selection of affordable listings and seamless working hours\n\n*   **Estimated cost**: The median total cost for a 28 [airbnb-mexico-city]-night stay is $2,635 [airbnb-mexico-city], with a 10th-percentile total price of $1,454 [airbnb-mexico-city]. There are 3,328 [airbnb-mexico-city] listings within the budget out of 7,251 [airbnb-mexico-city] available options.\n*   **Work hours**: Local work hours are 08:00 to 16:00 [iana-tz], aligning perfectly with Eastern time with 0 [iana-tz] hours outside the 08:00 to 22:00 window.\n*   **Typical weather**: February weather averages a high of 25°C [open-meteo-mexico-city-02] and a low of 7°C [open-meteo-mexico-city-02], with 2 [open-meteo-mexico-city-02] rainy days (totalling 11 mm [open-meteo-mexico-city-02] of precipitation), 11 [open-meteo-mexico-city-02] hours of daily sunshine, and 12 [open-meteo-mexico-city-02] daylight hours.\n*   **Travel advisory**: Level 2 [state-dept-mx] ([Travel Advisory](https://travel.state.gov/content/tsg_aem/us/en/home/international-travel/travel-advisories/destination.mex.html) [state-dept-mx]).\n\n| Neighbourhood | Listings in budget | Median stay total | Median download (fixed) | Speed confidence |\n| --- | --- | --- | --- | --- |\n| Cuauhtémoc | 1,493 [airbnb-mexico-city] | $2,007 [airbnb-mexico-city] | 196 Mbps [ookla-fixed-2026-Q3] | High |\n| Miguel Hidalgo | 426 [airbnb-mexico-city] | $2,088 [airbnb-mexico-city] | 216 Mbps [ookla-fixed-2026-Q3] | High |\n| Benito Juárez | 410 [airbnb-mexico-city] | $1,867 [airbnb-mexico-city] | 214 Mbps [ookla-fixed-2026-Q3] | High |\n\nExample listings:\n*   Cuauhtémoc: [Listing 1](https://www.airbnb.com/rooms/783566984574708383) [airbnb-mexico-city], [Listing 2](https://www.airbnb.com/rooms/822810729248868783) [airbnb-mexico-city]\n*   Miguel Hidalgo: [Listing 1](https://www.airbnb.com/rooms/1725947372018638632) [airbnb-mexico-city], [Listing 2](https://www.airbnb.com/rooms/1123193126067318698) [airbnb-mexico-city]\n*   Benito Juárez: [Listing 1](https://www.airbnb.com/rooms/740711905709801009) [airbnb-mexico-city], [Listing 2](https://www.airbnb.com/rooms/820480453878286465) [airbnb-mexico-city]\n\n## Lisbon: Very tight fit with high prices and extremely limited budget options\n\n*   **Estimated cost**: The median total cost for a 28 [airbnb-lisbon]-night stay is $5,212 [airbnb-lisbon], with a 10th-percentile total price of $3,344 [airbnb-lisbon]. Only 46 [airbnb-lisbon] listings fall within the budget out of 2,361 [airbnb-lisbon] available options.\n*   **Work hours**: Local work hours are 14:00 to 22:00 [iana-tz], perfectly aligning with Eastern time with 0 [iana-tz] hours required outside the 08:00 to 22:00 window.\n*   **Typical weather**: February weather averages a high of 17°C [open-meteo-lisbon-02] and a low of 10°C [open-meteo-lisbon-02], with 9 [open-meteo-lisbon-02] rainy days (totalling 77 mm [open-meteo-lisbon-02] of rainfall), 8 [open-meteo-lisbon-02] hours of sunshine, and 11 [open-meteo-lisbon-02] daylight hours.\n*   **Travel advisory**: Level 1 [state-dept-pt] ([Travel Advisory](https://travel.state.gov/content/tsg_aem/us/en/home/international-travel/travel-advisories/destination.prt.html) [state-dept-pt]).\n\n| Neighbourhood | Listings in budget | Median stay total | Median download (fixed) | Speed confidence |\n| --- | --- | --- | --- | --- |\n| Parque das Nações | 10 [airbnb-lisbon, fx-EUR] | $2,057 [airbnb-lisbon, fx-EUR] | 406 Mbps [ookla-fixed-2026-Q3] | High |\n| Estrela | 5 [airbnb-lisbon, fx-EUR] | $2,199 [airbnb-lisbon, fx-EUR] | 336 Mbps [ookla-fixed-2026-Q3] | High |\n| Campo de Ourique | 4 [airbnb-lisbon, fx-EUR] | $2,249 [airbnb-lisbon, fx-EUR] | 441 Mbps [ookla-fixed-2026-Q3] | High |\n\nExample listings:\n*   Parque das Nações: [Listing 1](https://www.airbnb.com/rooms/1486411169123477071) [airbnb-lisbon, fx-EUR], [Listing 2](https://www.airbnb.com/rooms/1416020551735337777) [airbnb-lisbon, fx-EUR]\n*   Estrela: [Listing 1](https://www.airbnb.com/rooms/1561250033326058732) [airbnb-lisbon, fx-EUR], [Listing 2](https://www.airbnb.com/rooms/1752963076035458156) [airbnb-lisbon, fx-EUR]\n*   Campo de Ourique: [Listing 1](https://www.airbnb.com/rooms/649307670936738982) [airbnb-lisbon, fx-EUR], [Listing 2](https://www.airbnb.com/rooms/15550101) [airbnb-lisbon, fx-EUR]\n\n## What this data can't tell you\n\n*   **Live Pricing and Availability**: All listing data is based on historical snapshots from September 2026 [airbnb-buenos-aires, airbnb-mexico-city, airbnb-lisbon], meaning live quotes and availability may have changed. The calculations multiply the snapshot's nightly rate by 28 [airbnb-buenos-aires] and do not reflect weekly or monthly Airbnb discounts that might otherwise apply.\n*   **Neighborhood Safety & Atmosphere**: While national travel advisory levels are provided, this data cannot evaluate local street-level safety, neighborhood vibes, or nightlife options.\n*   **Visa and Entry Requirements**: This research does not cover visa requirements, maximum stay limits, or tax implications for remote working in Argentina, Mexico, or Portugal.\n*   **In-unit Wi-Fi Speeds**: Download speeds are measured on a block-by-block level around the listing and reflect fixed broadband performance rather than the specific unit’s Wi-Fi [ookla-fixed-2026-Q3].\n*   **Lisbon-Specific Constraints**: A significant portion of the budget-friendly entire home listings in Parque das Nações are sailboat stays rather than traditional apartments [airbnb-lisbon]. Additionally, most neighborhoods in Lisbon have under 5 [airbnb-lisbon] listings within the budget, highly limiting specific area choices.\n\n## Sources\n- **[airbnb-buenos-aires]** Inside Airbnb: Buenos Aires, snapshot 2026-09-23, listings + availability <https://insideairbnb.com/get-the-data/>\n- **[iana-tz]** Computed with the IANA time zone database (Python zoneinfo): America/New_York -> America/Mexico_City on 2027-02-15\n- **[ookla-fixed-2026-Q3]** Speedtest® by Ookla® Global Fixed and Mobile Network Performance Maps: fixed tiles, 2026-Q3, zoom-16 (~600 m) tiles joined to listings by quadkey <https://github.com/teamookla/ookla-open-data>\n- **[airbnb-mexico-city]** Inside Airbnb: Mexico City, snapshot 2026-09-23, listings + availability <https://insideairbnb.com/get-the-data/>\n- **[airbnb-lisbon]** Inside Airbnb: Lisbon, snapshot 2026-09-19, listings + availability <https://insideairbnb.com/get-the-data/>\n- **[fx-ARS]** ExchangeRate-API (open.er-api.com): 1 ARS = 0.000647083 USD, as of 11 Nov 2026\n- **[open-meteo-buenos-aires-02]** Open-Meteo Historical Weather API (ERA5 reanalysis), CC BY 4.0: Buenos Aires, February 2021-2025, lat -34.592, lon -58.418, retrieved 2026-11-10 <https://open-meteo.com>\n- **[state-dept-ar]** U.S. Department of State travel advisories: Argentina - Level 1: Exercise Normal Precautions (updated 2026-07-09) <https://travel.state.gov/content/tsg_aem/us/en/home/international-travel/travel-advisories/destination.arg.html>\n- **[open-meteo-mexico-city-02]** Open-Meteo Historical Weather API (ERA5 reanalysis), CC BY 4.0: Mexico City, February 2021-2025, lat 19.415, lon -99.165, retrieved 2026-11-10 <https://open-meteo.com>\n- **[state-dept-mx]** U.S. Department of State travel advisories: Mexico Travel Advisory - Level 2: Exercise Increased Caution (updated 2026-05-28) <https://travel.state.gov/content/tsg_aem/us/en/home/international-travel/travel-advisories/destination.mex.html>\n- **[open-meteo-lisbon-02]** Open-Meteo Historical Weather API (ERA5 reanalysis), CC BY 4.0: Lisbon, February 2021-2025, lat 38.718, lon -9.148, retrieved 2026-11-10 <https://open-meteo.com>\n- **[state-dept-pt]** U.S. Department of State travel advisories: Portugal - Level 1: Exercise Normal Precautions (updated 2025-12-22) <https://travel.state.gov/content/tsg_aem/us/en/home/international-travel/travel-advisories/destination.prt.html>\n- **[fx-EUR]** Frankfurter (ECB reference rates): 1 EUR = 1.1214 USD, as of 2026-11-10",
+   "seconds": 138,
+   "clarifying": false,
+   "n_tool_calls": 28,
+   "agents": [
+    "Lead",
+    "Researcher-Buenos Aires",
+    "Researcher-Lisbon",
+    "Researcher-Mexico City",
+    "Writer"
+   ]
+  }
+ ],
+ "baseline": "Here is a detailed comparison of **Lisbon, Mexico City, and Buenos Aires** for a one-month stay in **February**, with a **$2,500 USD budget**, working **9:00 AM – 5:00 PM Eastern Time (ET)**.\n\n---\n\n### Quick Comparison Overview\n\n| Feature | Lisbon, Portugal | Mexico City, Mexico | Buenos Aires, Argentina |\n| :--- | :--- | :--- | :--- |\n| **Local Work Hours** | **2:00 PM – 10:00 PM** | **8:00 AM – 4:00 PM** | **11:00 AM – 7:00 PM** |\n| **February Weather** | Cool & damp (50°F–60°F / 10°C–16°C) | Warm & sunny (50°F–75°F / 10°C–24°C) | Hot summer (70°F–85°F / 21°C–30°C) |\n| **$2,500 Housing Value** | Good 1BR in cool neighborhood | Luxury 1BR in prime neighborhood | Ultra-luxury 1BR + lots of leftover cash |\n| **Internet Reliability** | Excellent (Fiber is standard) | Very Good (Fiber common in Roma/Condesa) | Good (Fiber common in Palermo) |\n| **Safety** | Extremely High | Moderate (neighborhood-dependent) | Moderate-High (neighborhood-dependent) |\n\n---\n\n### 1. Mexico City (CDMX), Mexico\n*The absolute best fit for seamless work hours and gorgeous February weather.*\n\n*   **Local Work Hours (9-5 ET):** **8:00 AM – 4:00 PM**\n    *   *Lifestyle:* This is the most practical schedule. You start slightly early, finish at 4:00 PM, and have the entire late afternoon and evening to explore the city, enjoy the world-class culinary scene, and socialize.\n*   **February Weather:** **Perfect.** February is the dry season. Days are sunny and warm (75°F / 24°C), and nights are crisp and cool. It is arguably the best month of the year to visit.\n*   **Housing & Budget ($2,500):**\n    *   $2,500 is a **very strong budget** in CDMX.\n    *   You can easily secure a beautiful, modern 1BR apartment with a dedicated desk, high-speed fiber internet, and a private balcony or rooftop access in the safest, most desirable neighborhoods: **Roma Norte, Condesa, or Polanco**.\n*   **Pros:**\n    *   Zero jet lag; perfect alignment with ET.\n    *   Incredible food scene (from street tacos to Michelin stars).\n    *   No overnight flights to get there from the US.\n*   **Cons:**\n    *   Traffic is brutal (stick to walking/bikes within your neighborhood).\n    *   Air quality can occasionally be poor in February due to the dry season.\n\n---\n\n### 2. Buenos Aires, Argentina\n*The best choice for summer lovers, European vibes on a budget, and a vibrant nightlife.*\n\n*   **Local Work Hours (9-5 ET):** **11:00 AM – 7:00 PM**\n    *   *Lifestyle:* This is a fantastic schedule for Buenos Aires. You can sleep in, have a slow morning at a café, work until 7:00 PM, and step right out into the city. Since Argentines don’t eat dinner until 9:30 PM or 10:00 PM, a 7:00 PM finish fits the local culture perfectly.\n*   **February Weather:** **Peak Summer.** It will be hot (often exceeding 85°F / 30°C) and sometimes humid. Perfect if you love pool days, outdoor dining, and warm summer nights.\n*   **Housing & Budget ($2,500):**\n    *   $2,500 is **massive wealth** in Buenos Aires.\n    *   You can get an ultra-luxury 1BR/2BR penthouse with a dedicated workspace, a balcony, and a building pool/gym in **Palermo Hollywood, Palermo Soho, or Recoleta** for $1,200–$1,600.\n    *   The remaining $1,000+ will allow you to eat out at world-class steakhouses, drink wine, and take taxis every single day without denting your budget.\n*   **Pros:**\n    *   Your USD has extreme purchasing power.\n    *   Stunning, European-style architecture and park system.\n    *   Highly compatible work schedule for the local nightlife/dining culture.\n*   **Cons:**\n    *   Can suffer from summer heatwaves and occasional power outages (ensure your Airbnb host has a generator/backup plan).\n    *   The long overnight flight from the US.\n\n---\n\n### 3. Lisbon, Portugal\n*The safest and most physically beautiful city, but hindered by winter weather and late-night work hours.*\n\n*   **Local Work Hours (9-5 ET):** **2:00 PM – 10:00 PM**\n    *   *Lifestyle:* This can be tough. You have your mornings entirely free to explore, but you are glued to your laptop during the afternoon and evening. Finishing work at 10:00 PM makes going out for dinner or socializing difficult, even in late-night Europe.\n*   **February Weather:** **Winter.** Lisbon in February is cool, damp, and often rainy (highs of 60°F / 16°C). Portuguese apartments notoriously lack central heating, meaning indoor spaces can feel very cold and drafty.\n*   **Housing & Budget ($2,500):**\n    *   Lisbon has become very expensive. However, because February is the low season, $2,500 is a healthy budget.\n    *   You can find a great 1BR with a workspace in central areas like **Principe Real, Santos, or Campo de Ourique**.\n    *   *Crucial:* You must message hosts to confirm the apartment has active heating (AC units with heat, or heaters) and high-speed fiber.\n*   **Pros:**\n    *   Extremely safe and walkable.\n    *   Excellent English spoken everywhere.\n    *   Superb coffee, wine, and coastal views.\n*   **Cons:**\n    *   Working until 10:00 PM limits your evening social life.\n    *   Damp, chilly winter weather.\n\n---\n\n### The Verdict: Which should you choose?\n\n1.  **Choose Mexico City if:** You want the absolute easiest transition, perfect work-life balance (done at 4:00 PM), zero jet lag, and warm, sunny spring-like weather.\n2.  **Choose Buenos Aires if:** You want to live like royalty on your budget, love hot summer weather, want a pool, and want a work schedule (11 AM – 7 PM) that aligns perfectly with late-night Argentine dining.\n3.  **Choose Lisbon if:** Safety is your absolute top priority, you don't mind working late into the night, and you prefer cool, cozy sweater weather over summer heat."
+}

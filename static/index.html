@@ -6,6 +6,9 @@
 <title>NomadReady</title>
 <meta name="description" content="Find where to work remotely for a week or more, and which neighbourhood to stay in." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d6b57' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='m15.5 8.5-2 5-5 2 2-5z'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..700&display=swap" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <style>
@@ -26,6 +29,10 @@
   --shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04);
   --radius: 12px;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --display: "Fraunces", Georgia, "Times New Roman", serif;
+  /* Timeline bars, one hue per role */
+  --c-lead: #0d6b57; --c-res: #2f6fbd; --c-writer: #8455bd; --c-verify: #b0611f;
+  --bar-muted: #d6d3ca;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -33,6 +40,7 @@
     --bg: #141413; --surface: #1d1d1b; --surface-2: #252522; --ink: #ecebe5; --muted: #a2a198;
     --line: #33322e; --accent: #5cc4a5; --accent-ink: #0d1f1a; --accent-soft: #18332b;
     --warn: #e3a94f; --warn-soft: #362a12; --bad: #f08a80; --bad-soft: #3a1d1a;
+    --c-lead: #5cc4a5; --c-res: #7aa9e6; --c-writer: #b893e6; --c-verify: #e0a066; --bar-muted: #45443f;
     --shadow: none; color-scheme: dark;
   }
 }
@@ -40,6 +48,7 @@
   --bg: #141413; --surface: #1d1d1b; --surface-2: #252522; --ink: #ecebe5; --muted: #a2a198;
   --line: #33322e; --accent: #5cc4a5; --accent-ink: #0d1f1a; --accent-soft: #18332b;
   --warn: #e3a94f; --warn-soft: #362a12; --bad: #f08a80; --bad-soft: #3a1d1a;
+  --c-lead: #5cc4a5; --c-res: #7aa9e6; --c-writer: #b893e6; --c-verify: #e0a066; --bar-muted: #45443f;
   --shadow: none; color-scheme: dark;
 }
 
@@ -56,7 +65,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Top bar */
 .top { border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: 0; z-index: 5; }
 .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 56px; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; letter-spacing: -.01em; }
+.brand { display: flex; align-items: center; gap: 10px; font: 650 19px/1 var(--display); letter-spacing: -.01em; }
 .brand svg { color: var(--accent); }
 .btn {
   border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px;
@@ -69,16 +78,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Intro */
 .intro { padding: 36px 0 8px; }
-.intro h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.15; letter-spacing: -.02em; margin: 0 0 10px; max-width: 22ch; }
+.intro h1 { font-family: var(--display); font-weight: 600; font-size: clamp(28px, 4.4vw, 42px); line-height: 1.1; letter-spacing: -.015em; margin: 0 0 12px; max-width: 22ch; }
 .intro .lede { color: var(--muted); font-size: 17px; max-width: 62ch; margin: 0 0 24px; }
 .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .fact { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
 .fact h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
 .fact ul, .fact ol { margin: 0; padding-left: 18px; font-size: 15px; }
 .fact li { margin: 3px 0; }
-.data-line { color: var(--muted); font-size: 13.5px; margin: 14px 0 0; }
+.site-foot { border-top: 1px solid var(--line); padding: 14px 0 28px; }
+.site-foot p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
 .intro.compact { padding: 18px 0 0; }
-.intro.compact .facts, .intro.compact .lede, .intro.compact .data-line { display: none; }
+.intro.compact .facts, .intro.compact .lede { display: none; }
 .intro.compact h1 { font-size: 20px; max-width: none; margin: 0; }
 
 /* Thread */
@@ -135,6 +145,25 @@ pre.json {
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .step.pending .icon { animation: none; border-color: var(--accent); } }
 
+/* Timeline: one bar per agent on a shared time axis */
+.timeline { padding: 12px 16px 2px; }
+.timeline h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+.tl-row { display: grid; grid-template-columns: 170px 1fr 52px; align-items: center; gap: 10px; height: 24px; }
+.tl-label { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-track { position: relative; height: 12px; background: var(--surface-2); border-radius: 6px; }
+.tl-bar { position: absolute; top: 0; height: 100%; border-radius: 6px; min-width: 4px; }
+.tl-bar.lead { background: var(--c-lead); }
+.tl-bar.res { background: var(--c-res); }
+.tl-bar.writer { background: var(--c-writer); }
+.tl-bar.verify { background: var(--c-verify); }
+.tl-bar.live { background-image: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); background-size: 60px 100%; animation: shimmer 1.2s linear infinite; }
+.tl-mark { position: absolute; top: -2px; width: 10px; height: 16px; margin-left: -5px; border-radius: 3px; background: var(--c-verify); }
+.tl-dur { font-size: 12px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.tl-axis { position: relative; height: 18px; margin: 2px 62px 0 180px; }
+.tl-axis span { position: absolute; top: 2px; transform: translateX(-50%); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+@keyframes shimmer { from { background-position: -60px 0; } to { background-position: 60px 0; } }
+@media (prefers-reduced-motion: reduce) { .tl-bar.live { animation: none; } }
+
 details.how { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
 details.how > summary { cursor: pointer; padding: 12px 16px; font-size: 14px; color: var(--muted); list-style-position: inside; }
 details.how > summary strong { color: var(--ink); font-weight: 600; }
@@ -149,8 +178,34 @@ details.how .run { border: 0; box-shadow: none; border-top: 1px solid var(--line
 .report .summary { border-left: 4px solid var(--accent); }
 .report .summary p.assumed { font-size: 14px; color: var(--muted); background: var(--surface-2); padding: 6px 10px; border-radius: 6px; }
 .report .city header { margin-bottom: 8px; }
-.report .city h2 { font-size: 22px; letter-spacing: -.01em; margin: 0; }
+.report .city h2 { font-family: var(--display); font-weight: 600; font-size: 28px; line-height: 1.15; letter-spacing: -.01em; margin: 0; }
 .report .city .verdict { margin: 2px 0 0; color: var(--muted); font-size: 15px; }
+.city-head { display: flex; align-items: flex-start; gap: 12px; }
+.city-head .titles { flex: 1; min-width: 0; }
+.rank { font: 600 15px/1 var(--display); color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 7px 9px; margin-top: 3px; }
+.fit { font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; margin-top: 6px; }
+.fit.good { background: var(--accent-soft); color: var(--accent); }
+.fit.tight { background: var(--warn-soft); color: var(--warn); }
+.fit.poor { background: var(--bad-soft); color: var(--bad); }
+.glance { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0 16px; }
+.stats { flex: 2 1 380px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; align-content: start; }
+.stat { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.stat .label { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.stat .value { font: 600 26px/1.15 var(--display); font-variant-numeric: lining-nums; margin: 3px 0 2px; overflow-wrap: anywhere; }
+.stat .value small { font: 500 14px var(--display); color: var(--muted); margin-left: 3px; }
+.stat .value.long { font-size: 21px; white-space: nowrap; }
+.stat .sub { font-size: 12.5px; color: var(--muted); }
+.stat .sub a.cite { vertical-align: baseline; }
+.stat.warn .value { color: var(--warn); }
+figure.weather { flex: 1 1 280px; margin: 0; background: var(--surface-2); border-radius: 10px; padding: 10px 12px 8px; min-width: 0; }
+figure.weather svg { display: block; width: 100%; height: auto; }
+figure.weather figcaption { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+figure.weather figcaption b { color: var(--ink); font-weight: 600; }
+.weather .bar { fill: var(--bar-muted); }
+.weather .bar.on { fill: var(--accent); }
+.weather .lbl { font-size: 10px; fill: var(--muted); font-family: system-ui, sans-serif; }
+.weather .lbl.on { fill: var(--ink); font-weight: 700; }
+.weather .val { font-size: 10px; fill: var(--ink); font-weight: 600; font-family: system-ui, sans-serif; }
 .report .limits { background: var(--surface-2); box-shadow: none; }
 .report .limits h2 { font-size: 16px; margin: 0 0 6px; }
 .report ul { padding-left: 20px; }
@@ -213,6 +268,10 @@ details.trip > summary span { font-weight: 400; color: var(--muted); font-size: 
   .facts { grid-template-columns: 1fr; }
   .report section { padding: 14px; }
   .lane.lead { grid-column: auto; }
+  .tl-row { grid-template-columns: 96px 1fr 40px; gap: 6px; }
+  .tl-axis { margin: 2px 46px 0 102px; }
+  .report .city h2 { font-size: 24px; }
+  .stat .value { font-size: 22px; }
 }
 </style>
 </head>
@@ -263,7 +322,6 @@ details.trip > summary span { font-weight: 400; color: var(--muted); font-size: 
         </ul>
       </div>
     </div>
-    <p class="data-line" id="data-line">Data: Inside Airbnb listings and calendars, Ookla speed tests, Open-Meteo weather history, U.S. State Department advisories, Google Maps.</p>
   </section>
 
   <section id="thread" aria-live="polite"></section>
@@ -333,6 +391,12 @@ details.trip > summary span { font-weight: 400; color: var(--muted); font-size: 
     </div>
   </form>
 </main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p id="data-line">Data: Inside Airbnb listings and calendars, Ookla speed tests, Open-Meteo weather history, U.S. State Department advisories, Google Maps.</p>
+  </div>
+</footer>
 
 <script>
 "use strict";
@@ -465,14 +529,58 @@ function makeRun() {
   const timer = h("span", { class: "timer", text: "0 s" });
   const status = h("div", { class: "status-line", text: "Starting…" });
   const lanesEl = h("div", { class: "lanes" });
-  const el = h("div", { class: "run" }, h("div", { class: "run-head" }, stepper, timer), status, lanesEl);
+  const timelineEl = h("div", { class: "timeline", hidden: true });
+  const el = h("div", { class: "run" }, h("div", { class: "run-head" }, stepper, timer), status, timelineEl, lanesEl);
 
   const lanes = new Map();
   const steps = new Map();
   const started = performance.now();
   let toolCalls = 0;
   let usedCoworking = false;
-  const tick = setInterval(() => { timer.textContent = fmtSecs((performance.now() - started) / 1000); }, 500);
+  let brief = null;
+  let finalT = null;
+  // Server time (event "t") moves on between events: estimate it from the last event seen
+  const clock = { t: 0, at: performance.now() };
+  const nowT = () => finalT ?? clock.t + (performance.now() - clock.at) / 1000;
+  const tick = setInterval(() => {
+    timer.textContent = fmtSecs((performance.now() - started) / 1000);
+    drawTimeline();
+  }, 500);
+
+  function roleClass(name) {
+    if (name === "Lead") return "lead";
+    if (name.startsWith("Researcher")) return "res";
+    if (name === "Writer") return "writer";
+    return "verify";
+  }
+
+  function drawTimeline() {
+    const rowsWithTime = [...lanes.entries()].filter(([, L]) => L.segs.length || L.marks.length);
+    if (!rowsWithTime.length) return;
+    timelineEl.hidden = false;
+    const now = nowT();
+    const total = Math.max(now, 10);
+    const pct = (t) => `${(Math.min(t, total) / total) * 100}%`;
+    const step = total <= 60 ? 10 : total <= 180 ? 30 : 60;
+    const ticks = [];
+    for (let t = 0; t <= total; t += step) ticks.push(h("span", { style: `left:${pct(t)}`, text: fmtSecs(t) }));
+    timelineEl.replaceChildren(
+      h("h3", { text: "Timeline" }),
+      ...rowsWithTime.map(([name, L]) => {
+        const busy = L.segs.reduce((s, g) => s + ((g.e ?? now) - g.s), 0);
+        return h("div", { class: "tl-row" },
+          h("span", { class: "tl-label", title: name, text: name.startsWith("Researcher-") ? `Researcher · ${prettyAgent(name)}` : name }),
+          h("div", { class: "tl-track" },
+            L.segs.map((g) => h("span", {
+              class: `tl-bar ${roleClass(name)}${g.e == null ? " live" : ""}`,
+              style: `left:${pct(g.s)};width:${(((g.e ?? now) - g.s) / total) * 100}%`,
+              title: `${name}: ${fmtSecs(g.s)} → ${g.e == null ? "now" : fmtSecs(g.e)}`,
+            })),
+            L.marks.map((t) => h("span", { class: "tl-mark", style: `left:${pct(t)}`, title: `${name} at ${fmtSecs(t)}` }))),
+          h("span", { class: "tl-dur", text: L.segs.length ? fmtSecs(busy) : "" }));
+      }),
+      h("div", { class: "tl-axis" }, ticks));
+  }
 
   function lane(name) {
     if (lanes.has(name)) return lanes.get(name);
@@ -484,7 +592,7 @@ function makeRun() {
         h("span", { class: "lane-name", text: name.startsWith("Researcher-") ? `Researcher · ${prettyAgent(name)}` : name }), pill),
       h("p", { class: "lane-role", text: role }), list);
     lanesEl.append(laneEl);
-    const L = { el: laneEl, pill, list, since: null, total: 0 };
+    const L = { el: laneEl, pill, list, since: null, total: 0, segs: [], marks: [] };
     lanes.set(name, L);
     return L;
   }
@@ -517,6 +625,7 @@ function makeRun() {
   }
 
   function handle(ev) {
+    if (typeof ev.t === "number") { clock.t = ev.t; clock.at = performance.now(); }
     switch (ev.type) {
       case "phase":
         setStage(ev.phase);
@@ -525,16 +634,20 @@ function makeRun() {
       case "agent": {
         const L = lane(ev.agent);
         if (ev.status === "started") {
-          if (L.since == null) L.since = ev.t;
+          if (L.since == null) { L.since = ev.t; L.segs.push({ s: ev.t, e: null }); }
           L.pill.className = "pill running"; L.pill.textContent = "working";
         } else {
           if (L.since != null) { L.total += ev.t - L.since; L.since = null; }
+          const open = L.segs.find((g) => g.e == null);
+          if (open) open.e = ev.t;
           L.pill.className = "pill done"; L.pill.textContent = fmtSecs(L.total);
         }
+        drawTimeline();
         break;
       }
       case "brief": {
         const b = ev.brief;
+        brief = b;
         const parts = [
           b.cities.length ? listJoin(b.cities) : "cities to be picked by the Lead",
           b.check_in ? `${b.check_in} → ${b.check_out} (${b.nights} nights)` : null,
@@ -573,6 +686,7 @@ function makeRun() {
         const n = ev.problems.length + (ev.unknown_citations.length ? 1 : 0);
         const V = lane("Verifier");
         if (V.since == null) { V.pill.className = "pill done"; V.pill.textContent = "checked"; }  // code check only, no model call
+        if (!V.segs.length) V.marks.push(ev.t);
         if (!n) note("Verifier", "Every number in the draft matched a tool result.");
         else note("Verifier", `${n} problem(s) found and sent back to the Writer:`, h("ul", {},
           ev.problems.map((p) => h("li", { text: `${p.verdict}: “${p.sentence.slice(0, 140)}” ${p.explanation}` })),
@@ -584,6 +698,9 @@ function makeRun() {
 
   function stop(ok, t) {
     clearInterval(tick);
+    finalT = t ?? nowT();
+    for (const L of lanes.values()) for (const g of L.segs) if (g.e == null) g.e = finalT;
+    drawTimeline();
     if (ok) {
       stepper.querySelectorAll("li").forEach((li) => { li.className = "done"; });
       status.textContent = `Done in ${fmtSecs(t ?? (performance.now() - started) / 1000)}.`;
@@ -600,6 +717,7 @@ function makeRun() {
     get agents() { return lanes.size; },
     get usedCoworking() { return usedCoworking; },
     get hasActivity() { return lanes.size > 0; },
+    get brief() { return brief; },
   };
 }
 
@@ -616,9 +734,112 @@ if (window.DOMPurify) {
   });
 }
 
-function renderReport(markdown, sources, runId, usedCoworking) {
+const fold = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
+const num = (n) => Math.round(n).toLocaleString("en-US");
+
+/* Months the stay covers (check-out day excluded), for highlighting the weather strip */
+function stayMonths(brief) {
+  const set = new Set();
+  if (!brief?.check_in) return set;
+  const first = new Date(brief.check_in + "T00:00:00");
+  const last = new Date((brief.check_out || brief.check_in) + "T00:00:00");
+  last.setDate(last.getDate() - 1);
+  const d = new Date(first.getFullYear(), first.getMonth(), 1);
+  while (d <= last && set.size < 12) { set.add(d.getMonth() + 1); d.setMonth(d.getMonth() + 1); }
+  if (!set.size) set.add(first.getMonth() + 1);
+  return set;
+}
+
+/* Stat tiles: numbers read from the tool results by the server (scout/summary.py) */
+function glanceTiles(card, chips) {
+  const tile = (label, value, unit, sub, ids, cls = "") =>
+    h("div", { class: `stat ${cls}` }, h("div", { class: "label", text: label }),
+      h("div", { class: `value${String(value).length > 9 ? " long" : ""}` }, value, unit ? h("small", { text: unit }) : null),
+      h("div", { class: "sub" }, sub, chips(ids || [])));
+  const tiles = [];
+  const s = card.stays;
+  const where = s?.scope ? `${s.scope}: ` : "";  // set when the numbers cover one area, not the whole city
+  if (s?.median_total_usd != null) {
+    tiles.push(tile("Median stay", money(s.median_total_usd), null,
+      where + (s.p10_total_usd != null ? `cheapest 10% under ${money(s.p10_total_usd)}` : `${s.nights} nights`), s.cites));
+  }
+  if (s?.n_within_budget != null) {
+    tiles.push(tile("Within budget", num(s.n_within_budget), "stays", `${where}of ${num(s.n_available)} open, up to ${money(s.budget_usd)}`,
+      s.cites, s.n_within_budget < 5 ? "warn" : ""));
+  } else if (s?.n_available != null) {
+    tiles.push(tile("Stays open", num(s.n_available), null, `${where}${s.nights} nights, any price`, s.cites));
+  }
+  const sp = card.speed;
+  if (sp) {
+    tiles.push(tile("Fixed download", sp.min === sp.max ? num(sp.min) : `${num(sp.min)}–${num(sp.max)}`, "Mbps",
+      `median, ${sp.n_areas} recommended area${sp.n_areas > 1 ? "s" : ""}`, sp.cites));
+  }
+  const hr = card.hours;
+  if (hr?.local) {
+    const nextDay = hr.local.includes("+1 day");
+    tiles.push(tile("Your hours, local", hr.local.replace(/\s*\(\+1 day\)/, "").replace("-", "–"), null,
+      (nextDay ? "ends the next day, " : "") + (hr.outside ? `${hr.outside} h outside 8am–10pm` : "all within 8am–10pm"),
+      hr.cites, hr.outside > 2 ? "warn" : ""));
+  }
+  const ad = card.advisory;
+  if (ad?.level != null) {
+    tiles.push(tile("U.S. advisory", `Level ${ad.level}`, null,
+      /^https?:/i.test(ad.url || "") ? h("a", { href: ad.url, target: "_blank", rel: "noopener noreferrer", text: "travel.state.gov" }) : "",
+      ad.cites, ad.level >= 3 ? "warn" : ""));
+  }
+  return tiles;
+}
+
+/* A year of typical highs and lows, with the stay's months highlighted */
+function weatherFigure(cl, months) {
+  const NS = "http://www.w3.org/2000/svg";
+  const s = (tag, attrs, text) => {
+    const e = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    if (text != null) e.textContent = text;
+    return e;
+  };
+  const W = 360, H = 132, top = 16, bottom = 32;
+  const lo = Math.floor(Math.min(...cl.months.map((m) => m.lo))) - 1;
+  const hi = Math.ceil(Math.max(...cl.months.map((m) => m.hi))) + 1;
+  const y = (v) => top + ((hi - v) / (hi - lo)) * (H - top - bottom);
+  const labelValues = months.size <= 3;
+  const svg = s("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+    "aria-label": `Typical daily highs and lows by month; ${[...months].map((m) => MONTHS[m - 1]).join(", ")} highlighted` });
+  cl.months.forEach((m, i) => {
+    const on = months.has(m.m);
+    const x = i * 30 + 15;
+    const bar = s("rect", { x: x - 6, y: y(m.hi), width: 12, height: Math.max(y(m.lo) - y(m.hi), 3), rx: 6, class: `bar${on ? " on" : ""}` });
+    bar.append(s("title", {}, `${MONTHS[m.m - 1]}: high ${m.hi}°C, low ${m.lo}°C, ${m.rain} rainy days`));
+    svg.append(bar);
+    svg.append(s("text", { x, y: H - 6, "text-anchor": "middle", class: `lbl${on ? " on" : ""}` }, MONTHS[m.m - 1].slice(0, 1)));
+    if (on && labelValues) {
+      svg.append(s("text", { x, y: y(m.hi) - 4, "text-anchor": "middle", class: "val" }, `${Math.round(m.hi)}°`));
+      svg.append(s("text", { x, y: y(m.lo) + 12, "text-anchor": "middle", class: "val" }, `${Math.round(m.lo)}°`));
+    }
+  });
+  const picked = cl.months.filter((m) => months.has(m.m));
+  let caption;
+  if (picked.length === 1) {
+    const m = picked[0];
+    caption = [h("b", { text: MONTHS[m.m - 1] }), `: highs ${Math.round(m.hi)}°C, lows ${Math.round(m.lo)}°C, ${m.rain} rainy days. `];
+  } else if (picked.length) {
+    caption = [h("b", { text: `${MONTHS[picked[0].m - 1].slice(0, 3)}–${MONTHS[picked[picked.length - 1].m - 1].slice(0, 3)}` }), " highlighted. "];
+  } else caption = [];
+  return h("figure", { class: "weather" }, svg,
+    h("figcaption", {}, caption, `Typical daily highs and lows, °C (Open-Meteo, ${cl.years}).`));
+}
+
+function renderReport(markdown, sources, runId, usedCoworking, cities = [], brief = null) {
   const body = markdown.split(/\n## Sources\s*\n/)[0];
   const index = new Map(sources.map((s, i) => [s.id, i + 1]));
+  const chips = (ids) => ids.filter((id) => index.has(id)).map((id) => {
+    const s = sources[index.get(id) - 1];
+    return h("a", { class: "cite", href: `#${runId}-src-${index.get(id)}`, title: `${s.source}: ${s.detail}`, text: String(index.get(id)) });
+  });
+  const cardFor = new Map(cities.map((c) => [fold(c.city), c]));
+  const months = stayMonths(brief);
   const withCites = body.replace(CITE_RE, (match, group) => {
     const ids = group.split(/\s*[,;]\s*/);
     if (!ids.every((id) => id.includes("-") || id === "unverified")) return match;
@@ -638,18 +859,40 @@ function renderReport(markdown, sources, runId, usedCoworking) {
   const tmp = h("div");
   tmp.innerHTML = DOMPurify.sanitize(marked.parse(withCites));
 
+  const headingText = (node) => {
+    const clone = node.cloneNode(true);
+    clone.querySelectorAll(".cite").forEach((c) => c.remove());
+    return clone.textContent.trim();
+  };
+  const isLimits = (text) => /can.?t tell|cannot tell/i.test(text);
+  const nCities = [...tmp.querySelectorAll("h2")].filter((n) => !isLimits(headingText(n))).length;
+  let rank = 0;
+
   let current = h("section", { class: "summary" });
   out.append(current);
   for (const node of [...tmp.childNodes]) {
     if (node.nodeName === "H2") {
-      const clone = node.cloneNode(true);
-      clone.querySelectorAll(".cite").forEach((c) => c.remove());
-      const text = clone.textContent.trim();
-      if (/can.?t tell|cannot tell/i.test(text)) {
+      const text = headingText(node);
+      if (isLimits(text)) {
         current = h("section", { class: "limits" }, h("h2", { text }));
       } else {
+        rank += 1;
         const m = text.match(/^([^:]+):\s*(.+)$/);
-        current = h("section", { class: "city" }, h("header", {}, h("h2", { text: m ? m[1] : text }), m ? h("p", { class: "verdict", text: m[2] }) : null));
+        const name = m ? m[1].trim() : text;
+        const card = cardFor.get(fold(name));
+        const fitLabel = { good: "Good fit", tight: "Tight fit", poor: "Poor fit" }[card?.fit];
+        current = h("section", { class: "city" },
+          h("header", { class: "city-head" },
+            nCities > 1 ? h("span", { class: "rank", text: `#${rank}` }) : null,
+            h("div", { class: "titles" }, h("h2", { text: name }), m ? h("p", { class: "verdict", text: m[2] }) : null),
+            fitLabel ? h("span", { class: `fit ${card.fit}`, title: "The researcher's overall fit to your brief", text: fitLabel }) : null));
+        if (card) {
+          const tiles = glanceTiles(card, chips);
+          const glance = h("div", { class: "glance" },
+            tiles.length ? h("div", { class: "stats" }, tiles) : null,
+            card.climate ? weatherFigure(card.climate, months) : null);
+          if (glance.childNodes.length) current.append(glance);
+        }
       }
       out.append(current);
     } else if (node.nodeName === "TABLE") {
@@ -732,7 +975,7 @@ async function ask(message) {
       $("#f-text").focus();
       return;
     }
-    const report = renderReport(ev.response, ev.sources || [], runId, run.usedCoworking);
+    const report = renderReport(ev.response, ev.sources || [], runId, run.usedCoworking, ev.cities || [], run.brief);
     turn.prepend(report);
     wrapHow(run, turn, ev.t);
     report.scrollIntoView({ behavior: "smooth", block: "start" });

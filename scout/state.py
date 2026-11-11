@@ -1,6 +1,7 @@
 """One question's shared state, and the hooks that record every tool call with its agent."""
 
 import json
+import logging
 import time
 from dataclasses import dataclass, field
 from typing import Any, Callable
@@ -8,6 +9,8 @@ from typing import Any, Callable
 from agents import RunHooks
 
 from scout.progress import describe_end, describe_start
+
+log = logging.getLogger("nomadready")
 
 
 @dataclass
@@ -56,10 +59,16 @@ class RecordingHooks(RunHooks):
 
     def send(self, event: dict) -> None:
         """Send a progress event (with seconds since the start) to the page, if one is listening.
-        A broken listener must never break the answer."""
+        A broken listener must never break the answer. Progress is also logged, so a stalled run
+        shows where it stopped (Cloud Run keeps stdout in Cloud Logging)."""
+        event = {**event, "t": round(time.monotonic() - self.started, 1)}
+        kind = event.get("type")
+        if kind in ("phase", "agent") or (kind == "step" and event.get("status") == "end"):
+            log.info("%6.1fs %-6s %s %s", event["t"], kind, event.get("agent", ""),
+                     event.get("text") or event.get("status", ""))
         if self._emit:
             try:
-                self._emit({**event, "t": round(time.monotonic() - self.started, 1)})
+                self._emit(event)
             except Exception:
                 pass
 

@@ -209,6 +209,9 @@ Returns **structured JSON** findings: `CityFindings` (fit, summary, counts, cost
 - `MAX_QUERIES_PER_RESEARCHER = 3` custom SQL calls, counted per researcher via the tool context's agent. Added after a Lisbon researcher spent all 12 turns on `query_listings` and returned nothing (~70 s lost, plus a re-sent researcher).
 - **Out of turns:** a `max_turns` error handler gives the researcher one more turn with `tool_choice="none"` to return findings from what it already has; `gaps` then says it ran out of turns. Tested with the cap forced to 4: Porto came back with real numbers and gaps naming what it skipped (+15 s).
 - A failed researcher becomes a gap, not a crash.
+- **Wall-clock limits** (added after a run hung past 6 minutes): each researcher is cut off at `RESEARCHER_TIMEOUT_S = 100` (becomes a gap); the whole research phase at `RESEARCH_PHASE_TIMEOUT_S = 180` (the Writer then works from whatever finished, and the Lead's notes name the cities not researched); the Writer's draft must finish by `WRITER_DEADLINE_S = 285` into the run, or the answer falls back to each researcher's own summary and gaps; after `REVISION_CUTOFF_S = 220` the Verifier's model check and the revision are skipped (unknown citations are still marked). Each has an offline test with a stalled fake model.
+- **Vertex AI 429s ("Resource exhausted"):** seen in testing on the `global` endpoint. LiteLLM's 2 retries sometimes run out mid-researcher (~80 s of work lost), and the Lead re-sends the city as `#2`, costing ~1 minute. Likely the cause of the hung run. The limits above bound the damage. **Fallback (built):** `FallbackModel` in `scout/config.py` retries a call that fails on `global` with a 429, 503, 500, timeout or connection error once on the `us` multi-region endpoint (1 retry on `global`, then 2 on `us`; other errors such as bad requests aren't retried). Gemini 3.5 Flash isn't served from single regions (`us-central1`, `us-east1`, `europe-west4`, ... return 404); `global`, `us` and `eu` work. Each fallback is logged as a warning. Tested offline with a fake 429 and live with structured output on `us`.
+- **Progress logging:** every phase, agent start/finish and tool result line is logged (`nomadready` logger), so Cloud Logging shows where a slow run spent its time.
 - Cloud Run request timeout: 600 s.
 - Parallel Researchers: the Lead calls `research_city` several times in one turn and the SDK runs them concurrently, as in the starter. The data tools are sync and run in threads.
 
@@ -240,7 +243,7 @@ It must be changed from the starter and must explain what the agent explores, wh
 - **Tested live:** Lisbon vs Porto, 3 weeks in April: both researchers start at 9.4 s, finish at 41 s and 53 s, report done at 143 s with 20 tool calls. A curl disconnect at 20 s left the session free and its history clean.
 
 **As built (`static/index.html`, one file, no build step):**
-- `GET /about` supplies the covered cities, snapshot dates, Ookla quarter and bookable window, used for the city chips, the month list (only months with room for a 7-night stay) and the data line in the intro.
+- `GET /about` supplies the covered cities, snapshot dates, Ookla quarter and bookable window, used for the city chips, the month list (only months with room for a 7-night stay) and the data line in the page footer (12 px, below the composer).
 - The trip form is turned into a plain sentence ("I'm considering Lisbon and Porto. I'll stay for 3 weeks, starting in April 2027. …") and sent like typed text, so the form and free text go through the same intake. The form resets and collapses after sending; follow-up answers are typed.
 - While running: a stage stepper (Understanding → Researching → Writing → Fact-checking) with a timer, and one lane per agent (Lead full width, then Researchers, Writer, Verifier) with each tool step's live line; a "data" toggle shows that call's arguments and result.
 - The report is split at its `##` headings into a summary card, one card per city (name + verdict), and a "What this data can't tell you" card. Tables scroll sideways on phones. `[citation-id]` markers become numbered chips linking to the Sources list, which is built from the `done` event's structured `sources`, not the markdown. Unknown ids show as a warning "?" chip. Google Maps attribution appears whenever coworking was searched. "Copy as Markdown" copies the full report.
@@ -249,9 +252,18 @@ It must be changed from the starter and must explain what the agent explores, wh
 - **Tested in headless Chrome:** vague question → clarifying question → form answer in the same session (92 s, 2 city cards, 44 citations all resolving, attribution shown); the 3-city sample (156 s, 6 agents, 37 tool calls, 64 citations, 0 unresolved); no console errors.
 - **Found by the page:** the work-hours citation id `zoneinfo` had no dash, so it was never recognised as a citation and was missing from Sources since step 4. Renamed to `iana-tz`, with a test.
 
+**Visual pass (Nov 2026):**
+- **Fraunces** (Google Fonts, variable `opsz`/`wght`) for the brand, the headline, city names, ranks and stat values; body text stays system sans.
+- **City card header:** rank (#1, #2… in the report's order, shown when there's more than one city), city name, the Writer's one-line verdict, and a fit badge (good / tight / poor, from the researcher's findings).
+- **Stat tiles** from `scout/summary.py`, which reads the numbers from the **tool results**, not the researchers' retyped findings: median stay and 10th percentile, count within budget (or open), fixed-download range across the recommended neighbourhoods, work hours in local time, advisory level. The `find_stays` call used is the one that best matches the brief (no neighbourhood filter, the brief's budget, room type and workspace), with ties going to the broadest call; when no city-wide call exists the tile names the area it covers (e.g. "Lisboa"). Each tile carries citation chips, and tile-only citation ids are appended to Sources. The same numbers go to the Writer as "exact city-level numbers", so prose and tiles agree (before this, prose said the 10th percentile was unavailable while the tile showed it).
+- **Weather strip:** 12 floating high–low bars per city from the `climate` table, the stay's months highlighted (with values when ≤3 months), and a caption for the trip month.
+- **Timeline** at the top of the run panel (live while running, kept in "How I got this"): one row per agent on a shared time axis, bars coloured by role (Lead, Researcher, Writer, Verifier), a marker when only the code fact-check ran. A researcher that fails now sends "finished" so its bar ends.
+- `done` now carries `cities` (the tile and climate data); `/chat` is unchanged.
+- **Tested** in headless Chrome: Lisbon vs Porto (ranks, fit badges, 10 tiles with resolving chips, weather captions, 6-row timeline, Fraunces loaded, no console errors, no horizontal scroll at 390 px, light and dark).
+
 ---
 
-## 8. Sample queries for the README (fill in expected answers after the data is built)
+## 8. Sample queries for the README (done: see README and docs/samples/)
 
 Each one gives a rough time and length so it runs in one turn (see the gate rules in section 5); the vague query below shows the clarification.
 
@@ -270,7 +282,7 @@ Also test a **vague query** (e.g., "Where should I go somewhere warm and cheap?"
 
 ## 9. Repo layout (as built)
 ```
-app.py                 # FastAPI: /chat, /clear, / (static/index.html)
+app.py                 # FastAPI: /chat, /run (SSE), /about, /clear, / (static/index.html)
 scout/                 # agents (not agents/: that shadows the SDK)
   config.py            #   models + caps
   state.py             #   Research run state + RecordingHooks (tool_calls, citations)
@@ -281,6 +293,7 @@ scout/                 # agents (not agents/: that shadows the SDK)
   verify.py            #   Verifier
   pipeline.py          #   answer(conversation) -> (response, state)
   progress.py          #   readable progress lines for /run's step events
+  summary.py           #   city stat-tile numbers from tool results (page + Writer)
 tools/                 # db.py, stays.py, weather.py, advisory.py, fx.py, overlap.py, coworking.py
 tests/                 # test_tools.py, test_scout.py, test_run.py (uv run pytest)
 scripts/               # offline pipeline (section 4)
@@ -289,8 +302,23 @@ data/                  # gitignored
 README.md
 submission.json
 pyproject.toml, uv.lock
-Dockerfile             # if the starter uses one
+Dockerfile             # bakes the DB into the image
+.dockerignore          # allowlist: only the files the image needs
+cloudbuild.yaml        # fetch DB from GCS -> build -> push -> deploy
 ```
+
+### Deployment (as built, Nov 2026)
+- **Live URL:** https://nomadready-wuuyn7pbbq-uc.a.run.app (Cloud Run service `nomadready`, project `agentic-ch3991-509700`, us-central1).
+- **Repo:** https://github.com/christinaahe/nomadready (public; data, `.env` and the starters are gitignored).
+- **Continuous deploy:** Cloud Build 2nd-gen connection `github` → repository `nomadready` → trigger `nomadready-deploy` on pushes to `main`, running `cloudbuild.yaml` as `nomadready-build`. A build takes ~3.5 min (fetch DB 30 s, build 50 s, push 50 s, deploy 75 s).
+- **Data:** `gs://agentic-ch3991-509700-nomadready-data/nomad.duckdb` (private, public access prevention on). The build copies it into the image, so nothing downloads at startup. **After rebuilding the DB, upload it again** (`gcloud storage cp data/nomad.duckdb gs://agentic-ch3991-509700-nomadready-data/`) and push or re-run the trigger.
+- **Images:** Artifact Registry `us-central1-docker.pkg.dev/agentic-ch3991-509700/nomadready/app`, cleanup policy keeps only the newest (the policy runs about daily). One image is 467 MB, under the 0.5 GB free tier. Rollback = revert the commit and push.
+- **Secret:** `nomadready-places-key` in Secret Manager, mounted as `GOOGLE_PLACES_API_KEY`.
+- **Service accounts:** `nomadready-run` (the app: `aiplatform.user`, access to that one secret); `nomadready-build` (the deploy: read the bucket, write the image repo, `run.admin`, `logging.logWriter`, act as `nomadready-run`).
+- **Cloud Run settings (free tier):** min instances 0 (scales to zero), max 1 (sessions are in memory), concurrency 20, 1 vCPU, 1 GiB (peak RSS measured locally ~290 MB), CPU boost, session affinity, timeout 600 s, public (`--allow-unauthenticated`).
+- **Costs:** everything is within free tiers except Gemini on Vertex AI, billed per token per question. The public URL means anyone can spend tokens; max 1 instance caps how fast.
+- **Dependencies trimmed for the image:** `google-cloud-aiplatform` and `google-cloud-storage` were unused (LiteLLM calls Vertex with `google-auth`); dropping them cut the installed size from 482 MB to 333 MB.
+- **Tested live:** page, `/about`, clarification, and sample question 3 over `/run` (76 s; coworking via the secret, weather from the table, keep-alive pings through Cloud Run).
 
 ## 10. Build order
 1. ~~Read the reference starter (`wikipedia-deep-research/`) and the Project 1 `/chat` shape (`gemini-web-tool-calling/`).~~ Done; see section 12.
@@ -298,9 +326,9 @@ Dockerfile             # if the starter uses one
 3. ~~Implement the tools and test them directly.~~ Done; see section 5 (City Researcher).
 4. ~~Build the Lead → parallel Researchers → Writer flow, then add the gap loop and the clarification gate.~~ Done, plus the Verifier; see section 5.
 5. ~~Build the frontend.~~ Done; see section 7. Testing it surfaced Open-Meteo 429s; fixed by precomputing climate into the DB (section 3, source 3).
-6. Set up the GCS bucket, Cloud Run with continuous deploy from GitHub, a 600s timeout, and a startup data download.
-7. Run the sample queries plus the no-tools baselines, and write the README and `submission.json`.
-8. Add the grader collaborators to the private repo.
+6. ~~Set up the GCS bucket, Cloud Run with continuous deploy from GitHub, a 600s timeout, and a startup data download.~~ Done, with the DB baked into the image instead of downloaded at startup; see "Deployment" in section 9.
+7. ~~Run the sample queries plus the no-tools baselines, and write the README and `submission.json`.~~ Done: `scripts/run_samples.py` writes `docs/samples/` (expected values from the tools, agent answer, no-tools baseline; Places names and ratings stripped). Agent answers matched the expected values in all three samples (Q1 138 s, Q2 168 s, Q3 64 s; vague demo 3 s + 88 s). `submission.json` uses UNI `ch3991`.
+8. Add the grader collaborators to the repo.
 
 ---
 

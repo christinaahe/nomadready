@@ -6,6 +6,7 @@ POST /run takes the same request and streams progress as server-sent events (the
 
 import asyncio
 import json
+import logging
 import threading
 import uuid
 from pathlib import Path
@@ -19,8 +20,12 @@ from pydantic import BaseModel
 HERE = Path(__file__).parent
 load_dotenv(HERE / ".env")  # GOOGLE_PLACES_API_KEY; before the tools read the environment
 
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s %(message)s")
+logging.getLogger("nomadready").setLevel(logging.INFO)  # per-step progress; libraries stay quiet
+
 from scout.intake import _calendar_window  # noqa: E402
 from scout.pipeline import answer  # noqa: E402
+from scout.summary import city_cards  # noqa: E402
 from scout.writer import cited_ids  # noqa: E402
 from tools.db import rows  # noqa: E402
 
@@ -138,11 +143,19 @@ async def run(request: ChatRequest):
                 response, state = task.result()
                 conversation.append({"role": "assistant", "content": response})
                 finished = True
-                sources = [{"id": cid, **state.citations[cid]} for cid in cited_ids(response)
-                           if cid in state.citations]
+                try:  # the page's stat tiles and weather strips; never let them break an answer
+                    cities = city_cards(state) if state.brief else []
+                except Exception:
+                    cities = []
+                # Sources: what the report cites, then anything only the tiles cite
+                ids = cited_ids(response)
+                for card in cities:
+                    for part in ("stays", "speed", "hours", "advisory"):
+                        ids += [i for i in ((card.get(part) or {}).get("cites") or []) if i not in ids]
+                sources = [{"id": cid, **state.citations[cid]} for cid in ids if cid in state.citations]
                 yield _sse({"type": "done", "response": response, "session_id": session_id,
                             "clarifying": not state.brief, "n_tool_calls": len(state.tool_calls),
-                            "sources": sources, "t": round(state.elapsed(), 1)})
+                            "sources": sources, "cities": cities, "t": round(state.elapsed(), 1)})
             except Exception as e:
                 response = _failed(e)
                 conversation.append({"role": "assistant", "content": response})
