@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NomadReady</title>
+<meta name="description" content="Find where to work remotely for a week or more, and which neighbourhood to stay in." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d6b57' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='m15.5 8.5-2 5-5 2 2-5z'/%3E%3C/svg%3E" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<style>
+:root {
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --surface-2: #f0efea;
+  --ink: #1d1d1b;
+  --muted: #696862;
+  --line: #e2e0d9;
+  --accent: #0d6b57;
+  --accent-ink: #ffffff;
+  --accent-soft: #e2f0eb;
+  --warn: #8f5500;
+  --warn-soft: #fbeed7;
+  --bad: #a3322a;
+  --bad-soft: #fbe5e2;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04);
+  --radius: 12px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413; --surface: #1d1d1b; --surface-2: #252522; --ink: #ecebe5; --muted: #a2a198;
+    --line: #33322e; --accent: #5cc4a5; --accent-ink: #0d1f1a; --accent-soft: #18332b;
+    --warn: #e3a94f; --warn-soft: #362a12; --bad: #f08a80; --bad-soft: #3a1d1a;
+    --shadow: none; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141413; --surface: #1d1d1b; --surface-2: #252522; --ink: #ecebe5; --muted: #a2a198;
+  --line: #33322e; --accent: #5cc4a5; --accent-ink: #0d1f1a; --accent-soft: #18332b;
+  --warn: #e3a94f; --warn-soft: #362a12; --bad: #f08a80; --bad-soft: #3a1d1a;
+  --shadow: none; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+a { color: var(--accent); }
+button, input, select, textarea { font: inherit; color: inherit; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+
+/* Top bar */
+.top { border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: 0; z-index: 5; }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 56px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; letter-spacing: -.01em; }
+.brand svg { color: var(--accent); }
+.btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px;
+  cursor: pointer; font-size: 14px;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; padding: 9px 18px; }
+.btn.primary:disabled { opacity: .55; cursor: progress; }
+.btn.small { padding: 3px 9px; font-size: 13px; }
+
+/* Intro */
+.intro { padding: 36px 0 8px; }
+.intro h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.15; letter-spacing: -.02em; margin: 0 0 10px; max-width: 22ch; }
+.intro .lede { color: var(--muted); font-size: 17px; max-width: 62ch; margin: 0 0 24px; }
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.fact { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
+.fact h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+.fact ul, .fact ol { margin: 0; padding-left: 18px; font-size: 15px; }
+.fact li { margin: 3px 0; }
+.data-line { color: var(--muted); font-size: 13.5px; margin: 14px 0 0; }
+.intro.compact { padding: 18px 0 0; }
+.intro.compact .facts, .intro.compact .lede, .intro.compact .data-line { display: none; }
+.intro.compact h1 { font-size: 20px; max-width: none; margin: 0; }
+
+/* Thread */
+#thread { display: flex; flex-direction: column; gap: 22px; padding: 24px 0 8px; }
+#thread:empty { display: none; }
+.user-msg {
+  align-self: flex-end; max-width: min(640px, 90%); background: var(--accent-soft);
+  border-radius: 14px 14px 4px 14px; padding: 10px 14px; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.assistant { display: flex; flex-direction: column; gap: 14px; }
+.bubble {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px 14px 14px 4px;
+  padding: 12px 16px; max-width: min(720px, 100%); box-shadow: var(--shadow);
+}
+.bubble.error { border-color: var(--bad); background: var(--bad-soft); }
+.bubble .who { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+
+/* Live run */
+.run { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.run-head { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; }
+.stepper { display: flex; gap: 6px; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+.stepper li { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--surface-2); color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.stepper li.active { background: var(--accent); color: var(--accent-ink); }
+.stepper li.done { background: var(--accent-soft); color: var(--accent); }
+.timer { font-variant-numeric: tabular-nums; font-size: 14px; color: var(--muted); }
+.status-line { padding: 10px 16px 0; font-size: 14px; color: var(--muted); min-height: 1.5em; }
+.lanes { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; padding: 12px 16px 16px; }
+.lane { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg); min-width: 0; }
+.lane.lead { grid-column: 1 / -1; }
+.lane-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.lane-name { font-weight: 650; font-size: 15px; }
+.lane-role { font-size: 12.5px; color: var(--muted); margin: 0 0 6px; }
+.pill { font-size: 12px; padding: 1px 8px; border-radius: 999px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pill.running { background: var(--accent-soft); color: var(--accent); }
+.pill.done { background: var(--surface-2); color: var(--muted); }
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.step { display: grid; grid-template-columns: 18px 1fr; gap: 6px; font-size: 13.5px; line-height: 1.4; }
+.step .icon { width: 14px; height: 14px; margin-top: 2px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+.step.pending .icon { border: 2px solid var(--accent-soft); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+.step.ok .icon { background: var(--accent-soft); color: var(--accent); }
+.step.err .icon { background: var(--warn-soft); color: var(--warn); }
+.step.note .icon { background: var(--surface-2); color: var(--muted); }
+.step .what { overflow-wrap: anywhere; }
+.step .found { color: var(--muted); display: block; overflow-wrap: anywhere; }
+.step.err .found { color: var(--warn); }
+.step .toggle { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; font-size: 12.5px; margin-left: 4px; }
+.step .data { grid-column: 2; margin-top: 4px; }
+.step .data h4 { margin: 6px 0 2px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+pre.json {
+  margin: 0; font: 12px/1.45 var(--mono); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 6px; padding: 8px; max-height: 280px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.step ul { margin: 4px 0 0; padding-left: 16px; color: var(--muted); }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .step.pending .icon { animation: none; border-color: var(--accent); } }
+
+details.how { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+details.how > summary { cursor: pointer; padding: 12px 16px; font-size: 14px; color: var(--muted); list-style-position: inside; }
+details.how > summary strong { color: var(--ink); font-weight: 600; }
+details.how .run { border: 0; box-shadow: none; border-top: 1px solid var(--line); border-radius: 0; }
+
+/* Report */
+.report { display: flex; flex-direction: column; gap: 14px; }
+.report-tools { display: flex; justify-content: flex-end; gap: 8px; }
+.report section { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); min-width: 0; }
+.report section > :first-child { margin-top: 0; }
+.report section > :last-child { margin-bottom: 0; }
+.report .summary { border-left: 4px solid var(--accent); }
+.report .summary p.assumed { font-size: 14px; color: var(--muted); background: var(--surface-2); padding: 6px 10px; border-radius: 6px; }
+.report .city header { margin-bottom: 8px; }
+.report .city h2 { font-size: 22px; letter-spacing: -.01em; margin: 0; }
+.report .city .verdict { margin: 2px 0 0; color: var(--muted); font-size: 15px; }
+.report .limits { background: var(--surface-2); box-shadow: none; }
+.report .limits h2 { font-size: 16px; margin: 0 0 6px; }
+.report ul { padding-left: 20px; }
+.report li { margin: 3px 0; }
+.table-wrap { overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: 8px; }
+.report table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+.report th, .report td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.report th { background: var(--surface-2); font-weight: 600; font-size: 13px; }
+.report tr:last-child td { border-bottom: 0; }
+a.cite, span.cite {
+  display: inline-block; min-width: 1.35em; padding: 0 4px; margin-left: 2px; border-radius: 5px;
+  font-size: 11px; line-height: 1.5; text-align: center; vertical-align: super; text-decoration: none;
+  background: var(--accent-soft); color: var(--accent); font-weight: 600;
+}
+span.cite.unverified { background: var(--warn-soft); color: var(--warn); }
+.sources { font-size: 13.5px; }
+.sources h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 6px; }
+.sources ol { margin: 0; padding-left: 22px; }
+.sources li { margin: 3px 0; overflow-wrap: anywhere; }
+.sources li:target { background: var(--accent-soft); border-radius: 4px; }
+.attribution { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+.attribution .gmaps { font-family: Roboto, Arial, sans-serif; font-weight: 500; color: var(--ink); }
+
+/* Composer */
+form.composer { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); margin: 18px 0 40px; }
+details.trip > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; font-size: 15px; }
+details.trip > summary span { font-weight: 400; color: var(--muted); font-size: 14px; }
+.fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 14px; padding: 0 16px 14px; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; min-width: 0; }
+.field > span { color: var(--muted); }
+.field.wide { grid-column: 1 / -1; }
+.field select, .field input[type=number], .field input[type=time] {
+  border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; background: var(--bg); width: 100%; min-width: 0;
+}
+.row { display: flex; gap: 6px; align-items: center; }
+.row input[type=time] { flex: 1 1 0; min-width: 0; }
+@media (min-width: 720px) { .field.hours { grid-column: span 2; } }
+.checks { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.checks label { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip input { position: absolute; opacity: 0; pointer-events: none; }
+.chip span {
+  display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px;
+  font-size: 13.5px; cursor: pointer; background: var(--bg); color: var(--ink);
+}
+.chip input:checked + span { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ask { border-top: 1px solid var(--line); padding: 12px 16px 14px; }
+.ask textarea {
+  width: 100%; min-height: 76px; resize: vertical; border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 12px; background: var(--bg);
+}
+.ask-foot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; margin-top: 10px; }
+.examples { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+.examples button { border: 1px dashed var(--line); background: none; border-radius: 999px; padding: 2px 10px; cursor: pointer; font-size: 13px; color: var(--ink); }
+.examples button:hover { border-color: var(--accent); }
+.hint { font-size: 12.5px; color: var(--muted); }
+
+@media (max-width: 720px) {
+  .facts { grid-template-columns: 1fr; }
+  .report section { padding: 14px; }
+  .lane.lead { grid-column: auto; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>
+      NomadReady
+    </div>
+    <button class="btn" id="new-chat" type="button">New chat</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro" id="intro">
+    <h1>Find where to work remotely for a week or more, and which neighbourhood to stay in.</h1>
+    <p class="lede">For remote workers planning a stay abroad. Tell NomadReady when you're going, for how long, your budget and the hours you need to be online. It researches each city in parallel, compares neighbourhoods on real listing and internet-speed data, and cites every number.</p>
+    <div class="facts">
+      <div class="fact">
+        <h2>What it checks</h2>
+        <ul>
+          <li>Airbnb stays open for your dates, and what they cost</li>
+          <li>Measured home-internet speeds around each listing</li>
+          <li>Typical weather for your month</li>
+          <li>Your work hours in local time</li>
+          <li>The U.S. travel advisory level</li>
+          <li>Coworking spaces nearby (Google Maps)</li>
+        </ul>
+      </div>
+      <div class="fact">
+        <h2>How it works</h2>
+        <ol>
+          <li>The <b>Lead</b> reads your request and asks if something key is missing</li>
+          <li>One <b>Researcher</b> per city works in parallel with the data tools</li>
+          <li>The Lead spots gaps and sends follow-ups</li>
+          <li>The <b>Writer</b> drafts; the <b>Verifier</b> checks every number against the data</li>
+        </ol>
+      </div>
+      <div class="fact">
+        <h2>What it can't tell you</h2>
+        <ul>
+          <li>Visa rules and how long you can stay</li>
+          <li>Safety, noise or a neighbourhood's feel</li>
+          <li>Live prices or discounts (it uses a snapshot)</li>
+          <li>A specific apartment's Wi-Fi</li>
+          <li>Hotels, leases or sublets</li>
+        </ul>
+      </div>
+    </div>
+    <p class="data-line" id="data-line">Data: Inside Airbnb listings and calendars, Ookla speed tests, Open-Meteo weather history, U.S. State Department advisories, Google Maps.</p>
+  </section>
+
+  <section id="thread" aria-live="polite"></section>
+
+  <form class="composer" id="composer" autocomplete="off">
+    <details class="trip" id="trip" open>
+      <summary>Trip details <span>(optional: fill these in, or just type below)</span></summary>
+      <div class="fields">
+        <div class="field wide">
+          <span>Cities you're considering <em class="hint">(leave empty and NomadReady will pick)</em></span>
+          <div class="chips" id="city-chips"></div>
+        </div>
+        <label class="field"><span>Starting in</span>
+          <select id="f-month"><option value="">Choose a month</option></select>
+        </label>
+        <label class="field"><span>For</span>
+          <select id="f-length">
+            <option value="">How long?</option>
+            <option>1 week</option><option>2 weeks</option><option>3 weeks</option><option>1 month</option>
+            <option>2 months</option><option>3 months</option><option>6 months</option>
+          </select>
+        </label>
+        <div class="field"><span>Budget (US$)</span>
+          <div class="row">
+            <input type="number" id="f-budget" min="0" step="50" placeholder="e.g. 2000" inputmode="numeric" />
+            <select id="f-per" aria-label="Budget covers">
+              <option value="for the whole stay">total</option>
+              <option value="per month">/ month</option>
+              <option value="per night">/ night</option>
+            </select>
+          </div>
+        </div>
+        <label class="field"><span>Place</span>
+          <select id="f-room">
+            <option value="">Any</option>
+            <option value="entire">Whole apartment</option>
+            <option value="private">Private room is fine</option>
+            <option value="shared">Shared room / dorm (cheapest)</option>
+          </select>
+        </label>
+        <div class="field hours"><span>Online hours, in your home time</span>
+          <div class="row">
+            <input type="time" id="f-start" value="09:00" aria-label="Start" />
+            <span>to</span>
+            <input type="time" id="f-end" value="17:00" aria-label="End" />
+          </div>
+        </div>
+        <label class="field"><span>Home time zone</span>
+          <select id="f-tz"><option value="">Choose one</option></select>
+        </label>
+        <div class="field wide">
+          <div class="checks">
+            <label><input type="checkbox" id="f-flex" /> My hours are flexible</label>
+            <label><input type="checkbox" id="f-desk" /> I need a dedicated workspace</label>
+            <label><input type="checkbox" id="f-cowork" /> Show coworking spaces nearby</label>
+          </div>
+        </div>
+      </div>
+    </details>
+    <div class="ask">
+      <textarea id="f-text" placeholder="Anything else? e.g. &quot;Somewhere warm, near the beach if possible.&quot; Or just ask your question here."></textarea>
+      <div class="ask-foot">
+        <div class="examples" id="examples"><span>Try:</span></div>
+        <button class="btn primary" id="send" type="submit">Ask NomadReady</button>
+      </div>
+      <p class="hint" id="send-hint">Answers take 1–3 minutes: you'll see each agent's work as it happens.</p>
+    </div>
+  </form>
+</main>
+
+<script>
+"use strict";
+
+const $ = (sel, el = document) => el.querySelector(sel);
+function h(tag, attrs = {}, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "text") el.textContent = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat()) if (kid != null && kid !== false) el.append(kid.nodeType ? kid : document.createTextNode(kid));
+  return el;
+}
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const fmtSecs = (s) => (s < 60 ? `${Math.round(s)} s` : `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`);
+const listJoin = (xs) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+
+let sessionId = null;
+let running = false;
+let runCount = 0;
+
+/* ---------- Data about the data: cities, months, snapshot dates ---------- */
+
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const TIMEZONES = [
+  ["America/New_York", "US Eastern"], ["America/Chicago", "US Central"], ["America/Denver", "US Mountain"],
+  ["America/Los_Angeles", "US Pacific"], ["America/Toronto", "Canada Eastern"], ["America/Sao_Paulo", "Brazil (São Paulo)"],
+  ["Europe/London", "UK"], ["Europe/Berlin", "Central Europe"], ["Asia/Kolkata", "India"],
+  ["Asia/Singapore", "Singapore"], ["Asia/Tokyo", "Japan"], ["Australia/Sydney", "Australia Eastern"],
+];
+
+async function loadAbout() {
+  let about;
+  try {
+    const res = await fetch("/about");
+    if (!res.ok) return;
+    about = await res.json();
+  } catch { return; }
+
+  const chips = $("#city-chips");
+  for (const c of about.cities) {
+    chips.append(h("label", { class: "chip", title: c.country }, h("input", { type: "checkbox", value: c.city }), h("span", { text: c.city })));
+  }
+
+  // Months the listing calendars cover with room for the minimum stay
+  const [start, end] = about.window.map((d) => new Date(d + "T00:00:00"));
+  const sel = $("#f-month");
+  const d = new Date(start.getFullYear(), start.getMonth(), 1);
+  while (d <= end) {
+    const from = d < start ? start : d;
+    if ((end - from) / 86400000 >= about.min_nights) {
+      sel.append(h("option", { value: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`, text: `${MONTHS[d.getMonth()]} ${d.getFullYear()}` }));
+    }
+    d.setMonth(d.getMonth() + 1);
+  }
+
+  const fmt = (s) => new Date(s + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const [a, b] = about.airbnb_snapshots;
+  $("#data-line").textContent =
+    `Covers ${about.cities.length} cities: ${about.cities.map((c) => c.city).join(", ")}. ` +
+    `Listings and calendars from Inside Airbnb (snapshots ${fmt(a)} – ${fmt(b)}), bookable stays through ${fmt(about.window[1])}. ` +
+    `Internet: Ookla speed tests, ${about.ookla_quarter}. Weather: Open-Meteo, 2021–2025. Advisories: U.S. State Department. Coworking: Google Maps.`;
+}
+
+function fillTimezones() {
+  const sel = $("#f-tz");
+  const mine = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const known = new Set(TIMEZONES.map(([tz]) => tz));
+  if (mine && !known.has(mine)) sel.append(h("option", { value: mine, text: `${mine.replace(/_/g, " ")} (yours)` }));
+  for (const [tz, label] of TIMEZONES) sel.append(h("option", { value: tz, text: tz === mine ? `${label} (yours)` : label }));
+}
+
+/* ---------- The form becomes a plain message: the agent reads it like anything typed ---------- */
+
+function composeMessage() {
+  const bits = [];
+  const cities = [...document.querySelectorAll("#city-chips input:checked")].map((i) => i.value);
+  if (cities.length) bits.push(`I'm considering ${listJoin(cities)}.`);
+
+  const month = $("#f-month").value, length = $("#f-length").value;
+  if (length && month) bits.push(`I'll stay for ${length}, starting in ${month}.`);
+  else if (length) bits.push(`I'll stay for ${length}.`);
+  else if (month) bits.push(`I'm going in ${month}.`);
+
+  const budget = Number($("#f-budget").value);
+  if (budget > 0) bits.push(`My budget is about $${budget.toLocaleString("en-US")} ${$("#f-per").value}.`);
+
+  const room = $("#f-room").value;
+  if (room === "entire") bits.push("I want a whole apartment to myself.");
+  if (room === "private") bits.push("A private room is fine.");
+  if (room === "shared") bits.push("A shared room or dorm bed is fine; I want the cheapest option.");
+
+  const tz = $("#f-tz").value;
+  if ($("#f-flex").checked) bits.push("My work hours are flexible.");
+  else if (tz) bits.push(`I need to be online ${$("#f-start").value}–${$("#f-end").value} ${tz} time.`);
+  if ($("#f-desk").checked) bits.push("I need a dedicated workspace.");
+  if ($("#f-cowork").checked) bits.push("Show me coworking spaces nearby.");
+
+  const text = $("#f-text").value.trim();
+  if (text) bits.push(text);
+  return bits.join(" ");
+}
+
+function resetForm() {
+  $("#composer").reset();
+  $("#trip").open = false;
+}
+
+/* ---------- One assistant turn: live progress, then the answer ---------- */
+
+const STAGES = [["intake", "Understanding"], ["research", "Researching"], ["writing", "Writing"], ["checking", "Fact-checking"]];
+const ROLES = {
+  Lead: "Reads your request, sends researchers, fills gaps",
+  Researcher: "Researches one city with the data tools",
+  Writer: "Writes the report from the findings only",
+  Verifier: "Checks the draft's numbers against the tool results",
+};
+
+function prettyAgent(name) {
+  const m = name.match(/^Researcher-(.+)$/);
+  return m ? m[1] : name;
+}
+
+function makeRun() {
+  const stepper = h("ol", { class: "stepper" }, STAGES.map(([key, label]) => h("li", { "data-stage": key, text: label })));
+  const timer = h("span", { class: "timer", text: "0 s" });
+  const status = h("div", { class: "status-line", text: "Starting…" });
+  const lanesEl = h("div", { class: "lanes" });
+  const el = h("div", { class: "run" }, h("div", { class: "run-head" }, stepper, timer), status, lanesEl);
+
+  const lanes = new Map();
+  const steps = new Map();
+  const started = performance.now();
+  let toolCalls = 0;
+  let usedCoworking = false;
+  const tick = setInterval(() => { timer.textContent = fmtSecs((performance.now() - started) / 1000); }, 500);
+
+  function lane(name) {
+    if (lanes.has(name)) return lanes.get(name);
+    const role = ROLES[name] || ROLES[name.split("-")[0]] || "";
+    const pill = h("span", { class: "pill running", text: "working" });
+    const list = h("ol", { class: "steps" });
+    const laneEl = h("article", { class: `lane ${name === "Lead" ? "lead" : ""}` },
+      h("div", { class: "lane-head" },
+        h("span", { class: "lane-name", text: name.startsWith("Researcher-") ? `Researcher · ${prettyAgent(name)}` : name }), pill),
+      h("p", { class: "lane-role", text: role }), list);
+    lanesEl.append(laneEl);
+    const L = { el: laneEl, pill, list, since: null, total: 0 };
+    lanes.set(name, L);
+    return L;
+  }
+
+  function note(name, text, extra) {
+    lane(name).list.append(h("li", { class: "step note" }, h("span", { class: "icon", text: "•" }), h("span", { class: "what" }, text, extra || null)));
+  }
+
+  function stepKey(ev) { return `${ev.agent}|${ev.id ?? ev.tool}`; }
+
+  function setStage(phase) {
+    const idx = phase === "revising" ? 3 : STAGES.findIndex(([k]) => k === phase);
+    if (idx < 0) return;
+    stepper.querySelectorAll("li").forEach((li, i) => { li.className = i < idx ? "done" : i === idx ? "active" : ""; });
+  }
+
+  function showData(li, call) {
+    const pretty = (x) => { try { return JSON.stringify(typeof x === "string" ? JSON.parse(x) : x, null, 2); } catch { return String(x); } };
+    let box = null;
+    const btn = h("button", { class: "toggle", type: "button", text: "data", "aria-expanded": "false" });
+    btn.addEventListener("click", () => {
+      if (!box) {
+        box = h("div", { class: "data" }, h("h4", { text: `${call.name} arguments` }), h("pre", { class: "json", text: pretty(call.args) }),
+          h("h4", { text: "Result" }), h("pre", { class: "json", text: pretty(call.result) }));
+        li.append(box);
+      } else box.hidden = !box.hidden;
+      btn.setAttribute("aria-expanded", String(!box.hidden));
+    });
+    $(".what", li).append(btn);
+  }
+
+  function handle(ev) {
+    switch (ev.type) {
+      case "phase":
+        setStage(ev.phase);
+        status.textContent = ev.text + "…";
+        break;
+      case "agent": {
+        const L = lane(ev.agent);
+        if (ev.status === "started") {
+          if (L.since == null) L.since = ev.t;
+          L.pill.className = "pill running"; L.pill.textContent = "working";
+        } else {
+          if (L.since != null) { L.total += ev.t - L.since; L.since = null; }
+          L.pill.className = "pill done"; L.pill.textContent = fmtSecs(L.total);
+        }
+        break;
+      }
+      case "brief": {
+        const b = ev.brief;
+        const parts = [
+          b.cities.length ? listJoin(b.cities) : "cities to be picked by the Lead",
+          b.check_in ? `${b.check_in} → ${b.check_out} (${b.nights} nights)` : null,
+          b.budget_total_usd ? `budget $${b.budget_total_usd.toLocaleString("en-US")}` : "no budget",
+          b.work_hours_home ? `online ${b.work_hours_home} ${b.home_tz}` : b.flexible_hours ? "flexible hours" : null,
+          b.room_type, b.needs_workspace ? "needs a workspace" : null,
+        ].filter(Boolean);
+        const extra = [...(b.assumptions || []), ...(b.uncovered_cities?.length ? [`not covered: ${b.uncovered_cities.join(", ")}`] : [])];
+        note("Lead", `Brief: ${parts.join(" · ")}`, extra.length ? h("ul", {}, extra.map((a) => h("li", { text: a }))) : null);
+        break;
+      }
+      case "step": {
+        const L = lane(ev.agent);
+        if (ev.status === "start") {
+          const li = h("li", { class: "step pending" }, h("span", { class: "icon", "aria-hidden": "true" }), h("span", { class: "what", text: ev.text }));
+          L.list.append(li);
+          steps.set(stepKey(ev), li);
+        } else {
+          const li = steps.get(stepKey(ev));
+          if (!li) break;
+          const err = ev.text.startsWith("error");
+          li.className = `step ${err ? "err" : "ok"}`;
+          $(".icon", li).textContent = err ? "!" : "✓";
+          $(".what", li).append(h("span", { class: "found", text: ev.text }));
+        }
+        break;
+      }
+      case "tool_call": {
+        toolCalls += 1;
+        if (ev.name === "nearby_coworking") usedCoworking = true;
+        const li = steps.get(stepKey(ev));
+        if (li) { steps.delete(stepKey(ev)); showData(li, ev); }
+        break;
+      }
+      case "checked": {
+        const n = ev.problems.length + (ev.unknown_citations.length ? 1 : 0);
+        const V = lane("Verifier");
+        if (V.since == null) { V.pill.className = "pill done"; V.pill.textContent = "checked"; }  // code check only, no model call
+        if (!n) note("Verifier", "Every number in the draft matched a tool result.");
+        else note("Verifier", `${n} problem(s) found and sent back to the Writer:`, h("ul", {},
+          ev.problems.map((p) => h("li", { text: `${p.verdict}: “${p.sentence.slice(0, 140)}” ${p.explanation}` })),
+          ev.unknown_citations.length ? h("li", { text: `cited unknown sources: ${ev.unknown_citations.join(", ")}` }) : null));
+        break;
+      }
+    }
+  }
+
+  function stop(ok, t) {
+    clearInterval(tick);
+    if (ok) {
+      stepper.querySelectorAll("li").forEach((li) => { li.className = "done"; });
+      status.textContent = `Done in ${fmtSecs(t ?? (performance.now() - started) / 1000)}.`;
+    } else {
+      status.textContent = "Stopped.";
+    }
+    for (const L of lanes.values()) if (L.pill.classList.contains("running")) { L.pill.className = "pill done"; L.pill.textContent = "stopped"; }
+    for (const li of el.querySelectorAll(".step.pending")) { li.className = "step err"; $(".icon", li).textContent = "!"; }
+  }
+
+  return {
+    el, handle, stop,
+    get toolCalls() { return toolCalls; },
+    get agents() { return lanes.size; },
+    get usedCoworking() { return usedCoworking; },
+    get hasActivity() { return lanes.size > 0; },
+  };
+}
+
+/* ---------- The report: summary + a card per city + numbered citations + sources ---------- */
+
+const CITE_RE = /\[([A-Za-z0-9][A-Za-z0-9_.-]*(?:\s*[,;]\s*[A-Za-z0-9][A-Za-z0-9_.-]*)*)\](?!\()/g;
+
+if (window.DOMPurify) {
+  DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+    if (node.tagName === "A" && /^https?:/i.test(node.getAttribute("href") || "")) {
+      node.setAttribute("target", "_blank");
+      node.setAttribute("rel", "noopener noreferrer");
+    }
+  });
+}
+
+function renderReport(markdown, sources, runId, usedCoworking) {
+  const body = markdown.split(/\n## Sources\s*\n/)[0];
+  const index = new Map(sources.map((s, i) => [s.id, i + 1]));
+  const withCites = body.replace(CITE_RE, (match, group) => {
+    const ids = group.split(/\s*[,;]\s*/);
+    if (!ids.every((id) => id.includes("-") || id === "unverified")) return match;
+    return ids.map((id) => {
+      if (!index.has(id)) return `<span class="cite unverified" title="Not traced to a tool result">?</span>`;
+      const s = sources[index.get(id) - 1];
+      return `<a class="cite" href="#${runId}-src-${index.get(id)}" title="${esc(`${s.source}: ${s.detail}`)}">${index.get(id)}</a>`;
+    }).join("");
+  });
+
+  const out = h("div", { class: "report" });
+  if (!(window.marked && window.DOMPurify)) {
+    // Libraries didn't load: show the text as-is rather than unsanitized HTML
+    out.append(h("section", {}, h("pre", { style: "white-space:pre-wrap;margin:0", text: markdown })));
+    return out;
+  }
+  const tmp = h("div");
+  tmp.innerHTML = DOMPurify.sanitize(marked.parse(withCites));
+
+  let current = h("section", { class: "summary" });
+  out.append(current);
+  for (const node of [...tmp.childNodes]) {
+    if (node.nodeName === "H2") {
+      const clone = node.cloneNode(true);
+      clone.querySelectorAll(".cite").forEach((c) => c.remove());
+      const text = clone.textContent.trim();
+      if (/can.?t tell|cannot tell/i.test(text)) {
+        current = h("section", { class: "limits" }, h("h2", { text }));
+      } else {
+        const m = text.match(/^([^:]+):\s*(.+)$/);
+        current = h("section", { class: "city" }, h("header", {}, h("h2", { text: m ? m[1] : text }), m ? h("p", { class: "verdict", text: m[2] }) : null));
+      }
+      out.append(current);
+    } else if (node.nodeName === "TABLE") {
+      current.append(h("div", { class: "table-wrap" }, node));
+    } else if (node.nodeType === 1 || node.textContent.trim()) {
+      current.append(node);
+    }
+  }
+  const summary = $(".summary", out);
+  if (!summary.textContent.trim()) summary.remove();
+  else summary.querySelectorAll("p").forEach((p) => { if (/^Assumed\b/i.test(p.textContent.trim())) p.classList.add("assumed"); });
+
+  if (sources.length) {
+    const list = h("ol", {}, sources.map((s, i) => {
+      const url = /^https?:/i.test(s.url || "") ? s.url : null;
+      return h("li", { id: `${runId}-src-${i + 1}` }, h("strong", { text: s.source }), `: ${s.detail}`,
+        url ? [" · ", h("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: new URL(url).hostname.replace(/^www\./, "") })] : null);
+    }));
+    const src = h("section", { class: "sources" }, h("h3", { text: "Sources" }), list);
+    if (usedCoworking || sources.some((s) => s.id.startsWith("google-places"))) {
+      src.append(h("p", { class: "attribution" }, "Coworking places from ", h("span", { class: "gmaps", text: "Google Maps" }), ". Ratings and hours are Google's; check each space's website for prices."));
+    }
+    out.append(src);
+  }
+
+  const copy = h("button", { class: "btn small", type: "button", text: "Copy as Markdown" });
+  copy.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(markdown); copy.textContent = "Copied"; }
+    catch { copy.textContent = "Couldn't copy"; }
+    setTimeout(() => { copy.textContent = "Copy as Markdown"; }, 1500);
+  });
+  out.prepend(h("div", { class: "report-tools" }, copy));
+  return out;
+}
+
+/* ---------- Streaming /run ---------- */
+
+function parseBlock(block) {
+  let type = null; const data = [];
+  for (const line of block.split("\n")) {
+    if (line.startsWith("event: ")) type = line.slice(7);
+    else if (line.startsWith("data: ")) data.push(line.slice(6));
+  }
+  if (!data.length) return null;
+  try { return { type, ...JSON.parse(data.join("\n")) }; } catch { return null; }
+}
+
+function setRunning(on) {
+  running = on;
+  $("#send").disabled = on;
+  $("#send").textContent = on ? "Working…" : "Ask NomadReady";
+  $("#new-chat").disabled = on;
+}
+
+async function ask(message) {
+  if (running || !message.trim()) return;
+  setRunning(true);
+  $("#intro").classList.add("compact");
+  const thread = $("#thread");
+  thread.append(h("div", { class: "user-msg", text: message }));
+  const turn = h("div", { class: "assistant" });
+  const run = makeRun();
+  turn.append(run.el);
+  thread.append(turn);
+  turn.scrollIntoView({ behavior: "smooth", block: "start" });
+  const runId = `r${++runCount}`;
+  let ended = false;
+
+  const finish = (ev) => {
+    ended = true;
+    run.stop(ev.type === "done", ev.t);
+    if (ev.type === "error") {
+      turn.append(h("div", { class: "bubble error" }, h("div", { class: "who", text: "NomadReady" }), ev.message));
+      if (!run.hasActivity) run.el.remove(); else wrapHow(run, turn, ev.t);
+      return;
+    }
+    if (ev.clarifying) {
+      run.el.remove();
+      turn.append(h("div", { class: "bubble" }, h("div", { class: "who", text: "NomadReady" }), ev.response));
+      $("#f-text").focus();
+      return;
+    }
+    const report = renderReport(ev.response, ev.sources || [], runId, run.usedCoworking);
+    turn.prepend(report);
+    wrapHow(run, turn, ev.t);
+    report.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  try {
+    const res = await fetch("/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, session_id: sessionId }),
+    });
+    if (!res.ok || !res.body) throw new Error(`the server answered ${res.status}`);
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf("\n\n")) >= 0) {
+        const ev = parseBlock(buf.slice(0, i));
+        buf = buf.slice(i + 2);
+        if (!ev) continue;
+        if (ev.type === "session") sessionId = ev.session_id;
+        else if (ev.type === "done" || ev.type === "error") finish(ev);
+        else run.handle(ev);
+      }
+    }
+  } catch (e) {
+    if (!ended) finish({ type: "error", message: `Connection problem: ${e.message}. Try again.` });
+  }
+  if (!ended) finish({ type: "error", message: "The connection closed before the answer arrived. Try again." });
+  setRunning(false);
+}
+
+function wrapHow(run, turn, t) {
+  const secs = t != null ? ` · ${fmtSecs(t)}` : "";
+  const how = h("details", { class: "how" },
+    h("summary", {}, h("strong", { text: "How I got this" }), ` · ${run.agents} agents · ${run.toolCalls} tool calls${secs}`),
+    run.el);
+  turn.append(how);
+}
+
+/* ---------- Wiring ---------- */
+
+const EXAMPLES = [
+  ["Compare 3 cities", "A month in February, $2,500/month for a 1BR with a dedicated workspace, online 9am–5pm Eastern. Compare Lisbon, Mexico City, and Buenos Aires."],
+  ["Mexico City neighbourhoods", "In Mexico City, which neighborhoods have month-long rentals in March under $1,500 and the fastest home internet?"],
+  ["Lisbon for 6 months", "Can I stay in Lisbon for 6 months starting in January, and is the coworking scene good?"],
+  ["Something vague", "Where should I go somewhere warm and cheap?"],
+];
+
+for (const [label, text] of EXAMPLES) {
+  $("#examples").append(h("button", { type: "button", text: label, title: text, onclick: () => {
+    $("#composer").reset();
+    $("#f-text").value = text;
+    $("#f-text").focus();
+  } }));
+}
+
+$("#composer").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const message = composeMessage();
+  if (!message) { $("#f-text").focus(); return; }
+  resetForm();
+  ask(message);
+});
+
+$("#f-text").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("#composer").requestSubmit(); }
+});
+
+$("#new-chat").addEventListener("click", async () => {
+  if (running) return;
+  if (sessionId) fetch(`/clear?session_id=${encodeURIComponent(sessionId)}`, { method: "POST" }).catch(() => {});
+  sessionId = null;
+  $("#thread").replaceChildren();
+  $("#intro").classList.remove("compact");
+  $("#composer").reset();
+  $("#trip").open = true;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+fillTimezones();
+loadAbout();
+</script>
+</body>
+</html>

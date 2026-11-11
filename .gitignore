@@ -1,0 +1,23 @@
+# Virtual environment. uv recreates it from pyproject.toml + uv.lock.
+.venv/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Local secrets. Commit .env.example instead, never .env.
+.env
+
+# All raw and processed data. Inside Airbnb's terms: don't republish it.
+# The built DuckDB lives in a private GCS bucket; the deploy copies it into the container image.
+data/
+
+# Reference starters (read-only, not part of the submission)
+gemini-web-tool-calling/
+wikipedia-deep-research/
+
+# macOS
+.DS_Store
+
+# Personal Claude Code settings
+.claude/settings.local.json
