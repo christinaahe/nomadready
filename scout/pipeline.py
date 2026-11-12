@@ -8,6 +8,7 @@ from agents import Runner
 from agents.exceptions import MaxTurnsExceeded
 
 from scout.config import LEAD_MAX_TURNS, RESEARCH_PHASE_TIMEOUT_S
+from scout.followup import answer_from_report
 from scout.intake import intake
 from scout.lead import lead
 from scout.state import RecordingHooks, Research
@@ -25,6 +26,16 @@ async def answer(conversation: list[dict], emit: Callable[[dict], None] | None =
     brief, question = await intake(conversation, state, hooks)
     if question:
         return question, state
+
+    # 1b. A question about the answer already given: answer from that report, in seconds
+    if brief.pop("about_previous_answer", False):
+        hooks.phase("writing", "Answering from the previous report")
+        quick = await answer_from_report(conversation, state)
+        if quick:
+            state.brief, state.followup = brief, True
+            return quick, state
+        hooks.phase("intake", "The previous report doesn't cover that, so researching it")
+
     state.brief = brief
     hooks.send({"type": "brief", "brief": brief})
 

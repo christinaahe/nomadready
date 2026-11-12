@@ -278,6 +278,10 @@ table.nbs .lowc { color: var(--warn); font-size: 12px; }
 .panel.run-panel .run { border: 0; box-shadow: none; border-radius: 0; }
 .panel .report section { box-shadow: none; }
 .sources li.hl { background: var(--accent-soft); border-radius: 4px; }
+.bubble.quick .report > :first-child { margin-top: 0; }
+.bubble.quick .report > :last-child { margin-bottom: 0; }
+.quick-sources { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; padding: 8px 0 0 20px; border-top: 1px solid var(--line); }
+.quick-sources li { margin: 2px 0; }
 .report .limits { background: var(--surface-2); box-shadow: none; }
 .report .limits h2 { font-size: 16px; margin: 0 0 6px; }
 .report ul { padding-left: 20px; }
@@ -1106,6 +1110,37 @@ function reportDoc(markdown, cite) {
   return { doc, limits };
 }
 
+/* A follow-up answered from the previous report: a chat bubble with its citations */
+function renderQuickAnswer(ev, runId) {
+  const sources = ev.sources || [];
+  const index = new Map(sources.map((s, i) => [s.id, i + 1]));
+  const body = ev.response.split(/\n## Sources\s*\n/)[0];
+  const out = h("div", { class: "bubble quick" },
+    h("div", { class: "who", text: `NomadReady · from the report above · ${fmtSecs(ev.t ?? 0)}` }));
+  if (!(window.marked && window.DOMPurify)) {
+    out.append(h("div", { style: "white-space:pre-wrap", text: ev.response }));
+    return out;
+  }
+  const withCites = body.replace(CITE_RE, (match, group) => {
+    const ids = group.split(/\s*[,;]\s*/);
+    if (!ids.every((id) => id.includes("-") || id === "unverified")) return match;
+    return ids.map((id) => {
+      if (!index.has(id)) return `<span class="cite unverified" title="Not traced to a source">?</span>`;
+      const s = sources[index.get(id) - 1];
+      return `<a class="cite" href="#${runId}-src-${index.get(id)}" title="${esc(`${s.source}: ${s.detail}`)}">${index.get(id)}</a>`;
+    }).join("");
+  });
+  const text = h("div", { class: "report" });
+  text.innerHTML = DOMPurify.sanitize(marked.parse(withCites));
+  text.querySelectorAll("table").forEach((t) => t.replaceWith(h("div", { class: "table-wrap" }, t.cloneNode(true))));
+  out.append(text);
+  if (sources.length) {
+    out.append(h("ol", { class: "sources quick-sources" }, sources.map((s, i) =>
+      h("li", { id: `${runId}-src-${i + 1}` }, h("strong", { text: s.source }), `: ${s.detail}`))));
+  }
+  return out;
+}
+
 function renderResult(ev, run, runId) {
   const markdown = ev.response, sources = ev.sources || [], brief = run.brief;
   const index = new Map(sources.map((s, i) => [s.id, i + 1]));
@@ -1301,6 +1336,11 @@ async function ask(message) {
       run.el.remove();
       turn.append(h("div", { class: "bubble" }, h("div", { class: "who", text: "NomadReady" }), ev.response));
       $("#f-text").focus();
+      return;
+    }
+    if (ev.followup) {  // answered from the report above, no new research
+      run.el.remove();
+      turn.append(renderQuickAnswer(ev, runId));
       return;
     }
     const view = renderResult(ev, run, runId);  // moves the live run into its "How I got this" panel

@@ -25,7 +25,9 @@ the lead's notes and the researchers' findings you're given.
 
 Structure:
 1. If the brief lists assumptions, start with one line: "Assumed: ...".
-2. **Bottom line**: 2-4 sentences ranking the cities for this brief.
+2. **Bottom line**: 2-4 sentences ranking the cities for this brief. If the brief has uncovered_cities,
+   start by saying those cities aren't among the 20 cities NomadReady's data covers (not that they
+   weren't researched), so you can't compare them.
 3. A section per city, best first: "## <City>: <one-line verdict>". Then bullets for estimated cost of
    the stay, work hours in local time, typical weather, travel advisory level (with its link). Then a
    table of the recommended neighbourhoods:

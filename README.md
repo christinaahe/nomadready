@@ -27,6 +27,8 @@ Open the page and either fill in **Trip details** (cities, month, length, budget
 
 If the question is too vague ("somewhere warm and cheap?"), it asks for what's missing first.
 
+**Follow-ups in the same chat.** To change the trip, just say what to change: "make it $2,000", "add Porto", "drop Lisbon", "what if I go in May?". NomadReady keeps everything else and researches again. To ask about the answer you already have ("which of those has the fastest internet?", "why is Lisbon last?", "is Palermo safe?"), it answers in about 10–15 seconds from that report alone, with the same citations, and no new research. A code check makes sure every number in that quick answer appears in the report. If the report doesn't cover the question (a neighbourhood it didn't list, say), the full research runs instead. "Thanks" gets a one-line reply, and **New search** starts over.
+
 **API.** `POST /chat` keeps the Project 1 shape. Every tool call, including the sub-agents', is in `tool_calls` with an `agent` field:
 
 ```bash
@@ -186,7 +188,7 @@ gcloud auth application-default login       # Vertex AI (Gemini) credentials
 echo "GOOGLE_PLACES_API_KEY=..." > .env     # optional: without it, coworking is reported as unknown
 # build data/nomad.duckdb (see "How to load it"), then:
 uv run app.py                               # http://127.0.0.1:8000
-uv run pytest -m "not network"              # 88 offline tests
+uv run pytest -m "not network"              # 91 offline tests
 ```
 
 ## Deployment

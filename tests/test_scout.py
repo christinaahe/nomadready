@@ -23,7 +23,8 @@ def extracted(**kw) -> Extracted:
     base = dict(cities=[], check_in=None, check_out=None, month=None, season=None, year=None, nights=None,
                 budget_amount=None, budget_period=None, budget_currency=None, home_tz=None, work_start=None,
                 work_end=None, flexible_hours=False, needs_workspace=False, room_type=None, min_bedrooms=None,
-                guests=1, preferences=[], wants_coworking=False, other_questions=[], off_topic=False)
+                guests=1, preferences=[], wants_coworking=False, other_questions=[], off_topic=False,
+                latest_is_chitchat=False, about_previous_answer=False)
     return Extracted(**(base | kw))
 
 
@@ -210,6 +211,75 @@ def test_reconcile_links_the_affordable_then_typical_example_and_the_writer_gets
 
 
 # --- the page's city cards: numbers come from tool results, not retyped findings ---
+
+
+def test_a_thanks_after_an_answer_gets_a_short_reply_not_new_research(monkeypatch):
+    import scout.intake as intake_mod
+
+    full = dict(cities=["Lisbon"], month=2, nights=28, budget_amount=2500, budget_period="stay",
+                home_tz="America/New_York", work_start="09:00", work_end="17:00")
+
+    async def fake_run(agent, transcript, **kw):
+        return SimpleNamespace(final_output=extracted(**full, latest_is_chitchat=True))
+
+    monkeypatch.setattr(intake_mod.Runner, "run", fake_run)
+    after_answer = [{"role": "user", "content": "Lisbon in Feb..."}, {"role": "assistant", "content": "## Lisbon..."},
+                    {"role": "user", "content": "thanks!"}]
+    brief, reply = asyncio.run(intake_mod.intake(after_answer, None, None))
+    assert brief is None and reply == intake_mod.CHITCHAT_REPLY
+    # A first message is never treated as small talk about an answer
+    brief, reply = asyncio.run(intake_mod.intake(after_answer[:1], None, None))
+    assert brief and brief["cities"] == ["Lisbon"]
+
+
+REPORT = """**Bottom line**: Buenos Aires first.
+
+## Buenos Aires: best
+| Neighbourhood | Listings in budget | Median download (fixed) |
+| --- | --- | --- |
+| Palermo | 1,398 [airbnb-buenos-aires] | 271 Mbps [ookla-fixed-2026-Q3] |
+
+## What this data can't tell you
+Visas.
+
+## Sources
+- **[airbnb-buenos-aires]** Inside Airbnb: Buenos Aires, snapshot 2026-09-20, listings + availability <https://insideairbnb.com/get-the-data/>
+- **[ookla-fixed-2026-Q3]** Speedtest® by Ookla® Global Fixed and Mobile Network Performance Maps: fixed tiles, 2026-Q3"""
+
+
+def test_followup_helpers_find_the_report_its_sources_and_unsupported_numbers():
+    from scout.followup import last_report, report_sources, unsupported_numbers
+
+    conv = [{"role": "user", "content": "q"}, {"role": "assistant", "content": REPORT},
+            {"role": "user", "content": "which is fastest?"},
+            {"role": "assistant", "content": "Palermo, 271 Mbps.\n\n## Sources\n- **[ookla-fixed-2026-Q3]** x: y"},
+            {"role": "user", "content": "and the cheapest?"}]
+    assert last_report(conv) == 1  # the full report, not the quick answer after it
+    src = report_sources(REPORT)
+    assert src["airbnb-buenos-aires"] == {"source": "Inside Airbnb", "url": "https://insideairbnb.com/get-the-data/",
+                                          "detail": "Buenos Aires, snapshot 2026-09-20, listings + availability"}
+    assert src["ookla-fixed-2026-Q3"]["url"] is None
+    assert unsupported_numbers("Palermo has 1,398 stays at 271 Mbps [ookla-fixed-2026-Q3].", REPORT) == []
+    assert unsupported_numbers("Palermo averages 300 Mbps.", REPORT) == [300.0]
+
+
+def test_a_question_about_the_last_answer_skips_research(monkeypatch):
+    import scout.pipeline as pipeline
+
+    async def fake_intake(conversation, state, hooks):
+        return {"cities": ["Buenos Aires"], "about_previous_answer": True}, None
+
+    async def fake_answer(conversation, state):
+        return "Palermo: 271 Mbps [ookla-fixed-2026-Q3]."
+
+    async def no_research(*a, **kw):
+        raise AssertionError("research should not run")
+
+    monkeypatch.setattr(pipeline, "intake", fake_intake)
+    monkeypatch.setattr(pipeline, "answer_from_report", fake_answer)
+    monkeypatch.setattr(pipeline.Runner, "run", no_research)
+    text, state = asyncio.run(pipeline.answer([{"role": "user", "content": "which is fastest?"}]))
+    assert text.startswith("Palermo") and state.followup and "about_previous_answer" not in state.brief
 
 
 def test_city_cards_use_the_matching_city_wide_call():

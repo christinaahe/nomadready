@@ -29,6 +29,7 @@ class Research:
     coworking_calls: int = 0
     queries_by_agent: dict[str, int] = field(default_factory=dict)  # query_listings calls per researcher
     corrections: list[str] = field(default_factory=list)  # researcher numbers fixed from tool results
+    followup: bool = False  # answered from the previous report (the fast path), no new research
     started: float = field(default_factory=time.monotonic)
 
     def elapsed(self) -> float:

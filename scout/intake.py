@@ -52,6 +52,15 @@ class Extracted(BaseModel):
                     "advisories, e.g. visas, safety of a neighbourhood, nightlife, coworking prices or community. "
                     "Quote briefly.")
     off_topic: bool = Field(description="True if the message isn't about planning a remote-work stay at all.")
+    latest_is_chitchat: bool = Field(
+        description="True only if the LATEST user message just thanks, greets or acknowledges ('thanks!', 'great', "
+                    "'ok cool') and asks for nothing new and changes nothing.")
+    about_previous_answer: bool = Field(
+        description="True only if the LATEST user message asks about the answer already given (which of those "
+                    "cities is cheapest, why X ranked last, what a number means), or asks something about the same "
+                    "cities that the data doesn't cover (is a neighbourhood safe, visas, nightlife), and changes "
+                    "nothing about the trip: no new or dropped cities, dates, length, budget, hours, room type or "
+                    "workspace.")
 
 
 intake_agent = Agent(
@@ -165,6 +174,8 @@ def _resolve(x: Extracted) -> tuple[dict, list[str], list[str]]:
 INTRO = ("I'm NomadReady: I help remote workers pick a city and neighbourhood for a stay of a week or more, "
          "using Airbnb availability, measured internet speeds, weather, and time zones. Tell me when you're "
          "going, your budget, and the hours you need to be online (with your home time zone).")
+CHITCHAT_REPLY = ("Happy to help! To change the search, just say what to change (\"make it $2,000\", "
+                  "\"add Porto\", \"what about May?\"), or start a new search for a different trip.")
 
 
 def _question(missing: list[str], unknown: list[str], cities: list[str] = ()) -> str:
@@ -192,9 +203,13 @@ async def intake(conversation: list[dict], context, hooks) -> tuple[dict | None,
     x: Extracted = result.final_output
     if x.off_topic and not x.cities:
         return None, INTRO
+    if x.latest_is_chitchat and any(m["role"] == "assistant" for m in conversation):
+        return None, CHITCHAT_REPLY  # don't redo minutes of research for a "thanks"
     brief, missing, unknown = _resolve(x)
     # Only uncovered cities named: treated like no city named. With a complete brief the Lead picks
     # comparable covered cities and the Writer says the named ones aren't covered; otherwise ask.
     if missing:
         return None, _question(missing, unknown, brief["cities"])
+    if x.about_previous_answer and any(m["role"] == "assistant" for m in conversation):
+        brief["about_previous_answer"] = True  # the pipeline tries the fast path first
     return brief, None

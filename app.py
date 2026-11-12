@@ -144,7 +144,7 @@ async def run(request: ChatRequest):
                 conversation.append({"role": "assistant", "content": response})
                 finished = True
                 try:  # the page's stat tiles and weather strips; never let them break an answer
-                    cities = city_cards(state) if state.brief else []
+                    cities = city_cards(state) if state.brief and not state.followup else []
                 except Exception:
                     cities = []
                 # Sources: what the report cites, then anything only the tiles cite
@@ -154,7 +154,8 @@ async def run(request: ChatRequest):
                         ids += [i for i in ((card.get(part) or {}).get("cites") or []) if i not in ids]
                 sources = [{"id": cid, **state.citations[cid]} for cid in ids if cid in state.citations]
                 yield _sse({"type": "done", "response": response, "session_id": session_id,
-                            "clarifying": not state.brief, "n_tool_calls": len(state.tool_calls),
+                            "clarifying": not state.brief, "followup": state.followup,
+                            "n_tool_calls": len(state.tool_calls),
                             "sources": sources, "cities": cities, "t": round(state.elapsed(), 1)})
             except Exception as e:
                 response = _failed(e)
