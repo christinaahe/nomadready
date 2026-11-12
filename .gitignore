@@ -21,3 +21,6 @@ wikipedia-deep-research/
 
 # Personal Claude Code settings
 .claude/settings.local.json
+
+# Private working notes (kept locally, not part of the submission)
+PROJECT_PLAN.md
