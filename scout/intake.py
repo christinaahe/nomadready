@@ -46,6 +46,9 @@ class Extracted(BaseModel):
     min_bedrooms: int | None = Field(description="Minimum bedrooms if stated: '1BR' = 1, '2 bedrooms' = 2. Null if not.")
     guests: int = Field(description="People staying. 1 unless stated.")
     preferences: list[str] = Field(description="Other wishes that could guide picking cities: warm, cheap, beach, ...")
+    rank_neighbourhoods_by: Literal["internet", "price", "availability"] | None = Field(
+        description="Only if the user asked for neighbourhoods by one measure: the fastest internet ('internet'), "
+                    "the cheapest ('price'), or the most places to choose from ('availability'). Else null.")
     wants_coworking: bool = Field(description="True if the user asked about coworking spaces or the coworking scene.")
     other_questions: list[str] = Field(
         description="Anything else asked that isn't about housing, internet, weather, work hours or travel "
@@ -157,6 +160,7 @@ def _resolve(x: Extracted) -> tuple[dict, list[str], list[str]]:
         "min_bedrooms": x.min_bedrooms,
         "guests": x.guests or 1,
         "preferences": x.preferences,
+        "rank_neighbourhoods_by": x.rank_neighbourhoods_by,
         "wants_coworking": x.wants_coworking,
         "other_questions": x.other_questions,
         "assumptions": assumed,

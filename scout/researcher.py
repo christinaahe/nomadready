@@ -195,7 +195,11 @@ For a first look at a city (unless the task says otherwise):
    - For Lisbon or Porto, also try neighbourhood='Lisboa' / 'PORTO' for the city proper, since their data
      covers the whole metro area.
 2. Pick the 1-3 neighbourhoods that best fit: enough listings within budget, fast fixed internet, low
-   share_low_confidence. If a pick has share_low_confidence above 0.3, call neighbourhood_speed for it.
+   share_low_confidence. If the brief's rank_neighbourhoods_by is set, the user asked for that measure:
+   among find_stays' by_neighbourhood rows with at least 20 listings (n_listings), pick the 3 best by it
+   (highest median_down_mbps_fixed for 'internet', lowest median_total_usd for 'price', most n_listings
+   for 'availability'), even if another neighbourhood has more listings. If fewer than 3 rows have 20+
+   listings, fill in with the best of the rest and say so in `gaps`. If a pick has share_low_confidence above 0.3, call neighbourhood_speed for it.
 3. month_climate for the month of check_in. travel_advisory for the city.
 4. If the brief has work hours and a home time zone, work_overlap with a date during the stay.
 5. If the brief has wants_coworking, or the stay has no dedicated workspace (room_type 'Shared room', or

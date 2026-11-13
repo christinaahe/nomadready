@@ -24,7 +24,7 @@ def extracted(**kw) -> Extracted:
                 budget_amount=None, budget_period=None, budget_currency=None, home_tz=None, work_start=None,
                 work_end=None, flexible_hours=False, needs_workspace=False, room_type=None, min_bedrooms=None,
                 guests=1, preferences=[], wants_coworking=False, other_questions=[], off_topic=False,
-                latest_is_chitchat=False, about_previous_answer=False)
+                latest_is_chitchat=False, about_previous_answer=False, rank_neighbourhoods_by=None)
     return Extracted(**(base | kw))
 
 

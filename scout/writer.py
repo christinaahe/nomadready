@@ -32,7 +32,9 @@ Structure:
    the stay, work hours in local time, typical weather, travel advisory level (with its link). Then a
    table of the recommended neighbourhoods:
    | Neighbourhood | Listings in budget | Median stay total | Median download (fixed) | Speed confidence |
-   If budget_total_usd is null, call the second column "Listings available" instead. Add a "Coworking
+   If budget_total_usd is null, call the second column "Listings available" instead. If the brief's
+   rank_neighbourhoods_by is set, order the rows by that measure (fastest, cheapest, or most listings
+   first) and say in a sentence that they're ranked that way. Add a "Coworking
    nearby" column only if coworking was searched (coworking_nearby not null). Then, per neighbourhood,
    its example listings from "Example listings" below: the affordable one, then the typical one (near
    that neighbourhood's median), each as a link labelled with its room type and stay total, e.g.
